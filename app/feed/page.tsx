@@ -39,10 +39,6 @@ export default function Feed() {
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [feedTime, setFeedTime] = useState("");
-  const [amount, setAmount] = useState("");
-  const [wetDiaper, setWetDiaper] = useState(false);
-  const [pooped, setPooped] = useState(false);
   const [feedEntries, setFeedEntries] = useState([
     {
       feedTime: "",
@@ -114,31 +110,66 @@ export default function Feed() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingFeed) return;
+    if (!editingFeed || feedEntries.length === 0) return;
 
     try {
+      const entry = feedEntries[0];
       const response = await fetch(`/api/feeds?id=${editingFeed.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${feedTime}`,
-          amount: parseInt(amount),
-          wetDiaper,
-          pooped,
+          feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`,
+          amount: parseInt(entry.amount),
+          wetDiaper: entry.wetDiaper,
+          pooped: entry.pooped,
         }),
       });
 
       if (response.ok) {
         setEditingFeed(null);
-        setFeedTime("");
-        setAmount("");
-        setWetDiaper(false);
-        setPooped(false);
+        setFeedEntries([
+          {
+            feedTime: "",
+            amount: "",
+            wetDiaper: false,
+            pooped: false,
+            id: Date.now(),
+          },
+        ]);
         fetchFeeds(selectedDate);
       }
     } catch (error) {
       console.error("Failed to update feed:", error);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this feed?")) return;
+
+    try {
+      const response = await fetch(`/api/feeds?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        fetchFeeds(selectedDate);
+      }
+    } catch (error) {
+      console.error("Failed to delete feed:", error);
+    }
+  };
+
+  const handleEdit = (feed: Feed) => {
+    setEditingFeed(feed);
+    setFeedEntries([
+      {
+        feedTime: format(new Date(feed.feedTime), "HH:mm"),
+        amount: feed.amount.toString(),
+        wetDiaper: feed.wetDiaper,
+        pooped: feed.pooped,
+        id: Date.now(),
+      },
+    ]);
   };
 
   if (!mounted) return null;
@@ -295,10 +326,6 @@ export default function Feed() {
                   type="button"
                   onClick={() => {
                     setEditingFeed(null);
-                    setFeedTime("");
-                    setAmount("");
-                    setWetDiaper(false);
-                    setPooped(false);
                   }}
                   className="w-full bg-gray-500 text-white rounded-md py-2 hover:bg-gray-600 transition-colors"
                 >
@@ -355,14 +382,57 @@ export default function Feed() {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Select Date</h2>
-            <div className="flex justify-center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                className="rounded-md border"
-              />
+            <h2 className="text-2xl font-bold mb-4">Daily Feeds</h2>
+            <div className="space-y-4">
+              {feeds.length === 0 ? (
+                <p className="text-gray-500">No feeds recorded for this day</p>
+              ) : (
+                feeds.map((feed) => (
+                  <div
+                    key={feed.id}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-2">
+                        <p className="font-medium">
+                          Time: {format(new Date(feed.feedTime), "HH:mm")}
+                        </p>
+                        <p>Amount: {feed.amount}ml</p>
+                        <div className="flex space-x-4 text-sm">
+                          <span
+                            className={`${
+                              feed.wetDiaper ? "text-blue-500" : "text-gray-400"
+                            }`}
+                          >
+                            Wet Diaper
+                          </span>
+                          <span
+                            className={`${
+                              feed.pooped ? "text-blue-500" : "text-gray-400"
+                            }`}
+                          >
+                            Pooped
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEdit(feed)}
+                          className="p-2 text-blue-500 hover:text-blue-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(feed.id)}
+                          className="p-2 text-red-500 hover:text-red-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
