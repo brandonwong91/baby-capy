@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
 
 export default function Home() {
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -18,16 +20,28 @@ export default function Home() {
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       const inputDate = new Date(selectedDate);
-      if (
-        inputDate.getDate() === 9 &&
-        inputDate.getMonth() === 4 &&
-        inputDate.getFullYear() === 2024
-      ) {
-        localStorage.setItem("isDateAuthenticated", "true");
-        router.push("/dashboard");
-      }
+      checkAndNavigate(inputDate);
     }
     setDate(selectedDate);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputDate = new Date(e.target.value);
+    if (!isNaN(inputDate.getTime())) {
+      setDate(inputDate);
+      checkAndNavigate(inputDate);
+    }
+  };
+
+  const checkAndNavigate = (inputDate: Date) => {
+    if (
+      inputDate.getDate() === 9 &&
+      inputDate.getMonth() === 4 &&
+      inputDate.getFullYear() === 2024
+    ) {
+      localStorage.setItem("isDateAuthenticated", "true");
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -36,6 +50,12 @@ export default function Home() {
         <h1 className="text-2xl font-bold text-center mb-6">
           Enter the Capy&apos;s Date
         </h1>
+        <Input
+          type="date"
+          value={date ? format(date, "yyyy-MM-dd") : ""}
+          onChange={handleInputChange}
+          className="mb-4 w-fit"
+        />
         <Calendar
           mode="single"
           selected={date}
