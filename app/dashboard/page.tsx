@@ -58,7 +58,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-center mb-8">
           Time since Brad&apos;s birthday
         </h1>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-6 mb-6">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Years</h2>
             <CountUp
@@ -91,6 +91,14 @@ export default function Dashboard() {
               className="text-4xl font-bold"
             />
           </div>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => router.push("/feed")}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Go to Feed
+          </button>
         </div>
       </div>
     </main>
