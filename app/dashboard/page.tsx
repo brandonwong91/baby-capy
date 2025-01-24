@@ -39,6 +39,20 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, [router]);
 
+  const calculateDaysUntilBirthday = () => {
+    const today = new Date();
+    const birthday = new Date(today.getFullYear(), 4, 9); // May is month 4 (0-based)
+
+    if (today > birthday) {
+      // If we've passed this year's birthday, calculate for next year
+      birthday.setFullYear(today.getFullYear() + 1);
+    }
+
+    const diffTime = birthday.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const countdownDays = calculateDaysUntilBirthday();
   const years = differenceInYears(currentDate, targetDate);
   const months = differenceInMonths(currentDate, targetDate);
   const weeks = differenceInWeeks(currentDate, targetDate);
@@ -55,8 +69,17 @@ export default function Dashboard() {
         numberOfPieces={500}
       />
       <div className="w-full max-w-2xl p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-lg">
+        <div className="mb-8 p-6 bg-blue-50 rounded-lg text-center">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-blue-800">
+            Countdown to Brad&apos;s Birthday
+          </h2>
+          <div className="text-4xl sm:text-6xl font-bold text-blue-600">
+            <CountUp end={Math.abs(countdownDays)} duration={2.5} />
+            {Math.abs(countdownDays) === 1 ? " day" : " days"}
+          </div>
+        </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
-          Time since Brad&apos;s birthday
+          Brad is this old now!
         </h1>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
           <div className="text-center">
