@@ -152,13 +152,13 @@ export default function Feed() {
     <main className="flex min-h-screen flex-col items-center justify-start p-8">
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Select Date</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 place-text-center">
+            <h2 className="text-2xl font-bold mb-4 self-start">Select Date</h2>
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
+              className="rounded-md border w-fit"
             />
           </div>
 
@@ -168,28 +168,30 @@ export default function Feed() {
               onSubmit={editingFeed ? handleUpdate : handleSubmit}
               className="space-y-4"
             >
-              <div>
-                <label className="block text-sm font-medium mb-1">Time</label>
-                <Input
-                  type="time"
-                  value={feedTime}
-                  onChange={(e) => setFeedTime(e.target.value)}
-                  required
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Amount (ml)
-                </label>
-                <Input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                  min="0"
-                  className="w-full"
-                />
+              <div className="flex flex-row gap-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Time</label>
+                  <Input
+                    type="time"
+                    value={feedTime}
+                    onChange={(e) => setFeedTime(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Amount (ml)
+                  </label>
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    required
+                    min="0"
+                    className="w-full"
+                  />
+                </div>
               </div>
               <div className="flex space-x-4">
                 <label className="flex items-center space-x-2">

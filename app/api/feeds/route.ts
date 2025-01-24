@@ -1,26 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, Feed } from "@prisma/client";
-
-type ApiError = {
-  error: string;
-};
-
-type ApiSuccess = {
-  success: boolean;
-};
-
-type FeedRequest = {
-  feedTime: string;
-  amount: number;
-  wetDiaper: boolean;
-  pooped: boolean;
-};
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET(
-  request: Request
-): Promise<NextResponse<Feed[] | ApiError>> {
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
 
@@ -39,10 +22,10 @@ export async function GET(
         },
       },
       orderBy: {
-        feedTime: "desc",
+        feedTime: "asc",
       },
     });
-
+    console.log("feeds", feeds);
     return NextResponse.json(feeds);
   } catch (error: unknown) {
     console.error("Error fetching feeds:", error);
@@ -53,11 +36,9 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request
-): Promise<NextResponse<Feed | ApiError>> {
+export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as FeedRequest;
+    const body = await request.json();
     const feed = await prisma.feed.create({
       data: {
         feedTime: new Date(body.feedTime),
@@ -77,9 +58,7 @@ export async function POST(
   }
 }
 
-export async function PUT(
-  request: Request
-): Promise<NextResponse<Feed | ApiError>> {
+export async function PUT(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -88,7 +67,7 @@ export async function PUT(
   }
 
   try {
-    const body = (await request.json()) as FeedRequest;
+    const body = await request.json();
     const feed = await prisma.feed.update({
       where: { id },
       data: {
@@ -109,9 +88,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: Request
-): Promise<NextResponse<ApiSuccess | ApiError>> {
+export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
