@@ -45,23 +45,25 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg justify-items-center">
-        <h1 className="text-2xl font-bold text-center mb-6">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-24">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg space-y-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-center">
           Enter the Capy&apos;s Date
         </h1>
         <Input
           type="date"
           value={date ? format(date, "yyyy-MM-dd") : ""}
           onChange={handleInputChange}
-          className="mb-4 w-fit"
+          className="w-full"
         />
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleDateSelect}
-          className="rounded-md border w-fit"
-        />
+        <div className="flex justify-center">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={handleDateSelect}
+            className="rounded-md border"
+          />
+        </div>
       </div>
     </main>
   );

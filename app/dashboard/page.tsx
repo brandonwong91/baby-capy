@@ -47,48 +47,56 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-16 lg:p-24">
       <ReactConfetti
         width={windowSize.width}
         height={windowSize.height}
         recycle={false}
         numberOfPieces={500}
       />
-      <div className="w-full max-w-2xl p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-center mb-8">
+      <div className="w-full max-w-2xl p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-lg">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">
           Time since Brad&apos;s birthday
         </h1>
-        <div className="grid grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Years</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
+              Years
+            </h2>
             <CountUp
               end={Math.abs(years)}
               duration={2.5}
-              className="text-4xl font-bold"
+              className="text-2xl sm:text-4xl font-bold"
             />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Months</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
+              Months
+            </h2>
             <CountUp
               end={Math.abs(months)}
               duration={2.5}
-              className="text-4xl font-bold"
+              className="text-2xl sm:text-4xl font-bold"
             />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Weeks</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
+              Weeks
+            </h2>
             <CountUp
               end={Math.abs(weeks)}
               duration={2.5}
-              className="text-4xl font-bold"
+              className="text-2xl sm:text-4xl font-bold"
             />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Days</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
+              Days
+            </h2>
             <CountUp
               end={Math.abs(days)}
               duration={2.5}
-              className="text-4xl font-bold"
+              className="text-2xl sm:text-4xl font-bold"
             />
           </div>
         </div>
