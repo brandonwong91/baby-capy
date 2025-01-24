@@ -43,6 +43,15 @@ export default function Feed() {
   const [amount, setAmount] = useState("");
   const [wetDiaper, setWetDiaper] = useState(false);
   const [pooped, setPooped] = useState(false);
+  const [feedEntries, setFeedEntries] = useState([
+    {
+      feedTime: "",
+      amount: "",
+      wetDiaper: false,
+      pooped: false,
+      id: Date.now(),
+    },
+  ]);
   const router = useRouter();
   const [editingFeed, setEditingFeed] = useState<Feed | null>(null);
 
@@ -70,22 +79,32 @@ export default function Feed() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/feeds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${feedTime}`,
-          amount: parseInt(amount),
-          wetDiaper,
-          pooped,
-        }),
-      });
+      const promises = feedEntries.map((entry) =>
+        fetch("/api/feeds", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`,
+            amount: parseInt(entry.amount),
+            wetDiaper: entry.wetDiaper,
+            pooped: entry.pooped,
+          }),
+        })
+      );
 
-      if (response.ok) {
-        setFeedTime("");
-        setAmount("");
-        setWetDiaper(false);
-        setPooped(false);
+      const responses = await Promise.all(promises);
+      const allSuccessful = responses.every((response) => response.ok);
+
+      if (allSuccessful) {
+        setFeedEntries([
+          {
+            feedTime: "",
+            amount: "",
+            wetDiaper: false,
+            pooped: false,
+            id: Date.now(),
+          },
+        ]);
         fetchFeeds(selectedDate);
       }
     } catch (error) {
@@ -122,7 +141,7 @@ export default function Feed() {
     if (!editingFeed) return;
 
     try {
-      const response = await fetch(`/api/feeds/${editingFeed.id}`, {
+      const response = await fetch(`/api/feeds?id=${editingFeed.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -168,51 +187,127 @@ export default function Feed() {
               onSubmit={editingFeed ? handleUpdate : handleSubmit}
               className="space-y-4"
             >
-              <div className="flex flex-row gap-2">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Time</label>
-                  <Input
-                    type="time"
-                    value={feedTime}
-                    onChange={(e) => setFeedTime(e.target.value)}
-                    required
-                    className="w-full"
-                  />
+              {feedEntries.map((entry, index) => (
+                <div key={entry.id} className="space-y-4">
+                  {index > 0 && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFeedEntries((entries) =>
+                            entries.filter((_, i) => i !== index)
+                          );
+                        }}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        Remove Entry
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex justify-between w-full gap-2">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">
+                        Time
+                      </label>
+                      <Input
+                        type="time"
+                        value={entry.feedTime}
+                        onChange={(e) => {
+                          setFeedEntries((entries) =>
+                            entries.map((item, i) =>
+                              i === index
+                                ? { ...item, feedTime: e.target.value }
+                                : item
+                            )
+                          );
+                        }}
+                        required
+                        step="600"
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">
+                        Amount (ml)
+                      </label>
+                      <Input
+                        type="number"
+                        value={entry.amount}
+                        onChange={(e) => {
+                          setFeedEntries((entries) =>
+                            entries.map((item, i) =>
+                              i === index
+                                ? { ...item, amount: e.target.value }
+                                : item
+                            )
+                          );
+                        }}
+                        required
+                        min="0"
+                        step="10"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={entry.wetDiaper}
+                        onChange={(e) => {
+                          setFeedEntries((entries) =>
+                            entries.map((item, i) =>
+                              i === index
+                                ? { ...item, wetDiaper: e.target.checked }
+                                : item
+                            )
+                          );
+                        }}
+                        className="rounded"
+                      />
+                      <span>Wet Diaper</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={entry.pooped}
+                        onChange={(e) => {
+                          setFeedEntries((entries) =>
+                            entries.map((item, i) =>
+                              i === index
+                                ? { ...item, pooped: e.target.checked }
+                                : item
+                            )
+                          );
+                        }}
+                        className="rounded"
+                      />
+                      <span>Pooped</span>
+                    </label>
+                  </div>
+                  {index === feedEntries.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const lastEntry = feedEntries[feedEntries.length - 1];
+                        setFeedEntries((entries) => [
+                          ...entries,
+                          {
+                            feedTime: lastEntry.feedTime,
+                            amount: lastEntry.amount,
+                            wetDiaper: lastEntry.wetDiaper,
+                            pooped: lastEntry.pooped,
+                            id: Date.now(),
+                          },
+                        ]);
+                      }}
+                      className="w-full bg-gray-100 text-gray-600 rounded-md py-2 hover:bg-gray-200 transition-colors mt-4"
+                    >
+                      Add Another Entry
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Amount (ml)
-                  </label>
-                  <Input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                    min="0"
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={wetDiaper}
-                    onChange={(e) => setWetDiaper(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span>Wet Diaper</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={pooped}
-                    onChange={(e) => setPooped(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span>Pooped</span>
-                </label>
-              </div>
+              ))}
               <button
                 type="submit"
                 className="w-full bg-blue-500 text-white rounded-md py-2 hover:bg-blue-600 transition-colors"
