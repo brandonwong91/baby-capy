@@ -75,18 +75,24 @@ export default function Feed() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const promises = feedEntries.map((entry) =>
-        fetch("/api/feeds", {
+      const promises = feedEntries.map((entry) => {
+        // Combine selectedDate and entry.feedTime and make sure to adjust for the local timezone
+        const feedTimeDate = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`);
+      
+        // Adjust feedTime to local timezone if necessary
+        const localFeedTime = new Date(feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }));
+      
+        return fetch("/api/feeds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`,
+            feedTime: localFeedTime.toISOString(),  // Send as ISO string in local time
             amount: parseInt(entry.amount),
             wetDiaper: entry.wetDiaper,
             pooped: entry.pooped,
           }),
-        })
-      );
+        });
+      });
 
       const responses = await Promise.all(promises);
       const allSuccessful = responses.every((response) => response.ok);
