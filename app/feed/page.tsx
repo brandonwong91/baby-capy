@@ -388,7 +388,7 @@ export default function Feed() {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Daily Feeds (${feeds.reduce((sum, feed) => sum + feed.amount, 0)})</h2>
+            <h2 className="text-2xl font-bold mb-4">Daily Feeds ({feeds.reduce((sum, feed) => sum + feed.amount, 0)}ml)</h2>
             <div className="space-y-4">
               {feeds.length === 0 ? (
                 <p className="text-gray-500">No feeds recorded for this day</p>
