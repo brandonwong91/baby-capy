@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const startDate = date ? new Date(date) : new Date();
     startDate.setDate(startDate.getDate() - 1); 
-    startDate.setHours(startDate.setHours(16, 0, 0, 0))
+    startDate.setHours(startDate.setHours(16, 0, 0, 0));
      
     
     const endDate = new Date(startDate);
