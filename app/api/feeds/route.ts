@@ -11,12 +11,12 @@ export async function GET(request: Request) {
     const startDate = date ? new Date(date) : new Date();
     startDate.setHours(0, 0, 0, 0);
 
-    startDate.setHours(startDate.getHours() - 8);
+    // startDate.setHours(startDate.getHours() - 8);
 
     const endDate = new Date(startDate);
     endDate.setHours(23, 59, 59, 999);
 
-    endDate.setHours(endDate.getHours() - 8);
+    // endDate.setHours(endDate.getHours() - 8);
 
     const feeds = await prisma.feed.findMany({
       where: {
