@@ -10,12 +10,12 @@ export async function GET(request: Request) {
   try {
     const currentDate = date ? new Date(date) : new Date();
     const startDate = currentDate;
-    startDate.setDate(startDate.getDate() - 1); 
-    startDate.setHours(16, 0, 0, 0);
+    // startDate.setDate(startDate.getDate() - 1); 
+    startDate.setHours(0, 0, 0, 0);
      
     
     const endDate = new Date(currentDate);
-    endDate.setHours(15, 59, 59, 999);
+    endDate.setHours(23, 59, 59, 999);
 
 
 
