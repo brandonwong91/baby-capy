@@ -63,11 +63,11 @@ export default function Feed() {
   const fetchFeeds = async (date: Date) => {
     try {
       const response = await fetch(
-        `/api/feeds?date=${format(date, "yyyy-MM-dd")}`
+        `/api/feeds?date=${format(date, "yyyy-MM-dd")}&timezone=${
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        }`
       );
       const data = await response.json();
-      console.log("date", date);
-      console.log("feeds", data);
       setFeeds(data);
     } catch (error) {
       console.error("Failed to fetch feeds:", error);

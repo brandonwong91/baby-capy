@@ -6,11 +6,12 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
+  const timezone = searchParams.get("timezone") || "UTC";
 
   try {
     const currentDate = date ? new Date(date) : new Date();
     const localDate = new Date(
-      currentDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
+      currentDate.toLocaleString("en-US", { timeZone: timezone })
     );
 
     const startDate = new Date(localDate);
