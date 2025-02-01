@@ -66,6 +66,7 @@ export default function Feed() {
         `/api/feeds?date=${format(date, "yyyy-MM-dd")}`
       );
       const data = await response.json();
+      console.log("feeds", data);
       setFeeds(data);
     } catch (error) {
       console.error("Failed to fetch feeds:", error);
@@ -77,16 +78,20 @@ export default function Feed() {
     try {
       const promises = feedEntries.map((entry) => {
         // Combine selectedDate and entry.feedTime and make sure to adjust for the local timezone
-        const feedTimeDate = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`);
-      
+        const feedTimeDate = new Date(
+          `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`
+        );
+
         // Adjust feedTime to local timezone if necessary
-        const localFeedTime = new Date(feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }));
-      
+        const localFeedTime = new Date(
+          feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
+        );
+
         return fetch("/api/feeds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            feedTime: localFeedTime.toISOString(),  // Send as ISO string in local time
+            feedTime: localFeedTime.toISOString(), // Send as ISO string in local time
             amount: parseInt(entry.amount),
             wetDiaper: entry.wetDiaper,
             pooped: entry.pooped,
@@ -342,7 +347,7 @@ export default function Feed() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="gap-6 flex flex-col-reverse md:flex-col">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Daily Feeding Chart</h2>
             <Line
@@ -388,7 +393,10 @@ export default function Feed() {
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Daily Feeds ({feeds.reduce((sum, feed) => sum + feed.amount, 0)}ml)</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Daily Feeds ({feeds.reduce((sum, feed) => sum + feed.amount, 0)}
+              ml)
+            </h2>
             <div className="space-y-4">
               {feeds.length === 0 ? (
                 <p className="text-gray-500">No feeds recorded for this day</p>
