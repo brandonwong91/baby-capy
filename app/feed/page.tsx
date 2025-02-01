@@ -66,6 +66,7 @@ export default function Feed() {
         `/api/feeds?date=${format(date, "yyyy-MM-dd")}`
       );
       const data = await response.json();
+      console.log("date", date);
       console.log("feeds", data);
       setFeeds(data);
     } catch (error) {
@@ -73,25 +74,26 @@ export default function Feed() {
     }
   };
 
+  const getLocalFeedTime = (selectedDate: Date, timeString: string): Date => {
+    const feedTimeDate = new Date(
+      `${format(selectedDate, "yyyy-MM-dd")}T${timeString}`
+    );
+    return new Date(
+      feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const promises = feedEntries.map((entry) => {
-        // Combine selectedDate and entry.feedTime and make sure to adjust for the local timezone
-        const feedTimeDate = new Date(
-          `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`
-        );
-
-        // Adjust feedTime to local timezone if necessary
-        const localFeedTime = new Date(
-          feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
-        );
+        const localFeedTime = getLocalFeedTime(selectedDate, entry.feedTime);
 
         return fetch("/api/feeds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            feedTime: localFeedTime.toISOString(), // Send as ISO string in local time
+            feedTime: localFeedTime.toISOString(),
             amount: parseInt(entry.amount),
             wetDiaper: entry.wetDiaper,
             pooped: entry.pooped,
@@ -125,11 +127,13 @@ export default function Feed() {
 
     try {
       const entry = feedEntries[0];
+      const localFeedTime = getLocalFeedTime(selectedDate, entry.feedTime);
+
       const response = await fetch(`/api/feeds?id=${editingFeed.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          feedTime: `${format(selectedDate, "yyyy-MM-dd")}T${entry.feedTime}`,
+          feedTime: localFeedTime.toISOString(),
           amount: parseInt(entry.amount),
           wetDiaper: entry.wetDiaper,
           pooped: entry.pooped,
