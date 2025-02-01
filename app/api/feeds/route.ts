@@ -6,19 +6,21 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
-  const timezone = searchParams.get("timezone") || "UTC";
+  const timezoneOffset = parseInt(searchParams.get("timezoneOffset") || "0");
 
   try {
+    // Create date in UTC
     const currentDate = date ? new Date(date) : new Date();
-    const localDate = new Date(
-      currentDate.toLocaleString("en-US", { timeZone: timezone })
-    );
 
-    const startDate = new Date(localDate);
-    startDate.setHours(0, 0, 0, 0);
+    // Calculate start of day in local time by applying timezone offset
+    const startDate = new Date(currentDate);
+    const offsetHours = Math.floor(timezoneOffset / 60);
+    const offsetMinutes = timezoneOffset % 60;
+    startDate.setUTCHours(offsetHours, offsetMinutes, 0, 0);
 
-    const endDate = new Date(localDate);
-    endDate.setHours(23, 59, 59, 999);
+    // Calculate end of day in local time by applying timezone offset
+    const endDate = new Date(currentDate);
+    endDate.setUTCHours(23 + offsetHours, 59 + offsetMinutes, 59, 999);
     const feeds = await prisma.feed.findMany({
       where: {
         feedTime: {
@@ -30,10 +32,6 @@ export async function GET(request: Request) {
         feedTime: "asc",
       },
     });
-    console.log("currentDate", currentDate);
-    console.log("startDate", startDate);
-    console.log("endDate", endDate);
-    console.log("feeds", feeds);
     return NextResponse.json(feeds);
   } catch (error: unknown) {
     console.error("Error fetching feeds:", error);

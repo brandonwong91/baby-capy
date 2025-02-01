@@ -63,9 +63,10 @@ export default function Feed() {
   const fetchFeeds = async (date: Date) => {
     try {
       const response = await fetch(
-        `/api/feeds?date=${format(date, "yyyy-MM-dd")}&timezone=${
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        }`
+        `/api/feeds?date=${format(
+          date,
+          "yyyy-MM-dd"
+        )}&timezoneOffset=${date.getTimezoneOffset()}`
       );
       const data = await response.json();
       setFeeds(data);
