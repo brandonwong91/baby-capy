@@ -9,16 +9,15 @@ export async function GET(request: Request) {
 
   try {
     const currentDate = date ? new Date(date) : new Date();
-    const startDate = currentDate;
-    // startDate.setDate(startDate.getDate() - 1); 
+    const localDate = new Date(
+      currentDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
+    );
+
+    const startDate = new Date(localDate);
     startDate.setHours(0, 0, 0, 0);
-     
-    
-    const endDate = new Date(currentDate);
+
+    const endDate = new Date(localDate);
     endDate.setHours(23, 59, 59, 999);
-
-
-
     const feeds = await prisma.feed.findMany({
       where: {
         feedTime: {
@@ -30,6 +29,9 @@ export async function GET(request: Request) {
         feedTime: "asc",
       },
     });
+    console.log("currentDate", currentDate);
+    console.log("startDate", startDate);
+    console.log("endDate", endDate);
     console.log("feeds", feeds);
     return NextResponse.json(feeds);
   } catch (error: unknown) {
