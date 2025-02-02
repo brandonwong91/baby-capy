@@ -16,6 +16,14 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { Button } from "@/components/ui/button";
+import {
+  BombIcon,
+  Droplet,
+  PencilIcon,
+  TrashIcon,
+  XCircleIcon,
+} from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -211,20 +219,22 @@ export default function Feed() {
               className="space-y-4"
             >
               {feedEntries.map((entry, index) => (
-                <div key={entry.id} className="space-y-4">
+                <div key={entry.id} className="space-y-4 relative">
                   {index > 0 && (
-                    <div className="flex justify-end">
-                      <button
+                    <div className="absolute -top-2 -right-2 -mt-1">
+                      <Button
                         type="button"
                         onClick={() => {
                           setFeedEntries((entries) =>
                             entries.filter((_, i) => i !== index)
                           );
                         }}
+                        variant={"ghost"}
+                        size={"icon"}
                         className="text-red-500 hover:text-red-600"
                       >
-                        Remove Entry
-                      </button>
+                        <XCircleIcon />
+                      </Button>
                     </div>
                   )}
                   <div className="flex justify-between w-full gap-2">
@@ -309,7 +319,8 @@ export default function Feed() {
                     </label>
                   </div>
                   {index === feedEntries.length - 1 && (
-                    <button
+                    <Button
+                      variant={"secondary"}
                       type="button"
                       onClick={() => {
                         const lastEntry = feedEntries[feedEntries.length - 1];
@@ -324,29 +335,28 @@ export default function Feed() {
                           },
                         ]);
                       }}
-                      className="w-full bg-gray-100 text-gray-600 rounded-md py-2 hover:bg-gray-200 transition-colors mt-4"
+                      //   className="w-full bg-gray-100 text-gray-600 rounded-md py-2 hover:bg-gray-200 transition-colors mt-4"
+                      className="w-full"
                     >
                       Add Another Entry
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white rounded-md py-2 hover:bg-blue-600 transition-colors"
-              >
+              <Button variant={"default"} type="submit" className="w-full">
                 {editingFeed ? "Update Feed" : "Add Feed"}
-              </button>
+              </Button>
               {editingFeed && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setEditingFeed(null);
                   }}
-                  className="w-full bg-gray-500 text-white rounded-md py-2 hover:bg-gray-600 transition-colors"
+                  className="w-full"
+                  variant={"destructive"}
                 >
                   Cancel Edit
-                </button>
+                </Button>
               )}
             </form>
           </div>
@@ -418,35 +428,46 @@ export default function Feed() {
                         </p>
                         <p>Amount: {feed.amount}ml</p>
                         <div className="flex space-x-4 text-sm">
-                          <span
-                            className={`${
-                              feed.wetDiaper ? "text-blue-500" : "text-gray-400"
-                            }`}
-                          >
-                            Wet Diaper
-                          </span>
-                          <span
-                            className={`${
-                              feed.pooped ? "text-blue-500" : "text-gray-400"
-                            }`}
-                          >
-                            Pooped
-                          </span>
+                          {feed.wetDiaper && (
+                            <span
+                              className={`${
+                                feed.wetDiaper
+                                  ? "text-blue-500 flex gap-1"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              <p>Wet Diaper</p>
+
+                              <Droplet />
+                            </span>
+                          )}
+                          {feed.pooped && (
+                            <span
+                              className={`${
+                                feed.pooped
+                                  ? "text-amber-800 flex gap-1"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              <p>Pooped</p>
+                              <BombIcon />
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <button
+                        <Button
                           onClick={() => handleEdit(feed)}
-                          className="p-2 text-blue-500 hover:text-blue-600"
+                          variant={"outline"}
                         >
-                          Edit
-                        </button>
-                        <button
+                          <PencilIcon />
+                        </Button>
+                        <Button
                           onClick={() => handleDelete(feed.id)}
-                          className="p-2 text-red-500 hover:text-red-600"
+                          variant={"destructive"}
                         >
-                          Delete
-                        </button>
+                          <TrashIcon />
+                        </Button>
                       </div>
                     </div>
                   </div>

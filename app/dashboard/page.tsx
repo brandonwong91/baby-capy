@@ -10,6 +10,7 @@ import {
 } from "date-fns";
 import { useRouter } from "next/navigation";
 import ReactConfetti from "react-confetti";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -124,12 +125,12 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex justify-center">
-          <button
+          <Button
             onClick={() => router.push("/feed")}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            // className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             Go to Feed
-          </button>
+          </Button>
         </div>
       </div>
     </main>
