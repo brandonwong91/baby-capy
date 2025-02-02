@@ -374,8 +374,8 @@ export default function Feed() {
                   {
                     label: "Milk Amount (ml)",
                     data: feeds.map((feed) => feed.amount),
-                    borderColor: "rgb(59, 130, 246)",
-                    backgroundColor: "rgba(59, 130, 246, 0.5)",
+                    borderColor: "#FF8BA7",
+                    backgroundColor: "rgba(255, 139, 167, 0.2)",
                     tension: 0.4,
                   },
                 ],
