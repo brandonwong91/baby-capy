@@ -429,28 +429,15 @@ export default function Feed() {
                         <p>Amount: {feed.amount}ml</p>
                         <div className="flex space-x-4 text-sm">
                           {feed.wetDiaper && (
-                            <span
-                              className={`${
-                                feed.wetDiaper
-                                  ? "text-blue-500 flex gap-1"
-                                  : "text-gray-400"
-                              }`}
-                            >
+                            <span className={"text-blue-500 flex gap-1"}>
                               <p>Wet Diaper</p>
-
-                              <Droplet />
+                              <Droplet className="h-5 w-5" />
                             </span>
                           )}
                           {feed.pooped && (
-                            <span
-                              className={`${
-                                feed.pooped
-                                  ? "text-amber-800 flex gap-1"
-                                  : "text-gray-400"
-                              }`}
-                            >
+                            <span className={"text-amber-800 flex gap-1"}>
                               <p>Pooped</p>
-                              <BombIcon />
+                              <BombIcon className="h-5 w-5" />
                             </span>
                           )}
                         </div>
