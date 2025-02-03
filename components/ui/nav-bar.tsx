@@ -31,6 +31,16 @@ export function NavBar() {
             >
               Feeds
             </Link>
+            <Link
+              href="/monitor"
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                pathname === "/monitor"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              }`}
+            >
+              Monitor
+            </Link>
           </div>
         </div>
       </div>
