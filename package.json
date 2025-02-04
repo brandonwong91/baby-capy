@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@liveblocks/client": "^2.16.2",
+    "@liveblocks/react": "^2.16.2",
+    "@liveblocks/react-ui": "^2.16.2",
     "@prisma/client": "6.2.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@shadcn/ui": "^0.0.4",
