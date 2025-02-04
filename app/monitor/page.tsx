@@ -3,24 +3,22 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
 import { Chat } from "@/components/chat/chat";
 import router from "next/router";
-
-type NoiseEvent = {
-  timestamp: Date;
-  level: number;
-  duration: number;
-};
+import { usePartySocket } from "partysocket/react";
 
 export default function Monitor() {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [noiseLevel, setNoiseLevel] = useState(0);
   const [threshold, setThreshold] = useState(15);
   const [minDuration, setMinDuration] = useState(3);
-  const [noiseEvents, setNoiseEvents] = useState<NoiseEvent[]>([]);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const socket = usePartySocket({
+    host: process.env.NEXT_PUBLIC_PARTYKIT_HOST,
+    room: "chat",
+  });
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -119,14 +117,15 @@ export default function Monitor() {
         thresholdTimeoutRef.current = setTimeout(() => {
           const duration = (Date.now() - thresholdStartTimeRef.current!) / 1000;
           if (duration >= minDuration) {
-            setNoiseEvents((prev) => [
-              {
-                timestamp: new Date(),
-                level: Math.round(normalizedLevel),
-                duration: Math.round(duration),
-              },
-              ...prev,
-            ]);
+            socket.send(
+              JSON.stringify({
+                type: "message",
+                text: `Baby's crying detected! Level: ${Math.round(
+                  normalizedLevel
+                )}%, Duration: ${Math.round(duration)}s`,
+                username: "Audio monitor",
+              })
+            );
           }
           thresholdStartTimeRef.current = null;
         }, minDuration * 1000);
@@ -221,27 +220,6 @@ export default function Monitor() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Noise Events</h2>
-          <div className="space-y-4 max-h-[600px] overflow-y-auto">
-            {noiseEvents.length === 0 ? (
-              <p className="text-gray-500">No noise events recorded</p>
-            ) : (
-              noiseEvents.map((event, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-2">
-                  <p className="font-medium">
-                    Time: {format(event.timestamp, "HH:mm:ss")}
-                  </p>
-                  <p>Level: {event.level}%</p>
-                  <p>Duration: {event.duration}s</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="w-full max-w-4xl mt-8">
         <Chat />
       </div>
     </main>
