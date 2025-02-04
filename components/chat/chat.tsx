@@ -4,6 +4,29 @@ import { useState, useEffect } from "react";
 import { usePartySocket } from "partysocket/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PencilIcon } from "lucide-react";
+
+type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
+
+const StatusIndicator = ({ status }: { status: ConnectionStatus }) => {
+  const statusConfig = {
+    connecting: { color: "bg-yellow-500", text: "Connecting..." },
+    connected: { color: "bg-green-500", text: "Connected" },
+    disconnected: { color: "bg-gray-500", text: "Disconnected" },
+    error: { color: "bg-red-500", text: "Connection Error" },
+  };
+
+  const config = statusConfig[status];
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-2 h-2 rounded-full ${config.color}`} />
+      <span className="text-sm text-gray-600 dark:text-gray-400">
+        {config.text}
+      </span>
+    </div>
+  );
+};
 
 type Message = {
   id: string;
@@ -17,18 +40,25 @@ export function Chat() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("connecting");
 
   const socket = usePartySocket({
     host: process.env.NEXT_PUBLIC_PARTYKIT_HOST,
     room: "chat",
     onOpen() {
       console.log("Connected to chat server");
+      setConnectionStatus("connected");
     },
     onClose() {
       console.log("Disconnected from chat server");
+      setConnectionStatus("disconnected");
     },
     onError(error) {
       console.error("WebSocket connection error:", error);
+      setConnectionStatus("error");
     },
     onMessage(event) {
       try {
@@ -129,9 +159,66 @@ export function Chat() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Chat</h2>
-        <div className="text-sm text-gray-600">
-          Chatting as: <span className="font-medium">{username}</span>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">Chat</h2>
+          <StatusIndicator status={connectionStatus} />
+        </div>
+        <div className="text-sm text-gray-600 flex items-center gap-2">
+          {isEditingUsername ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (
+                  newUsername.trim().length >= 3 &&
+                  newUsername.trim().length <= 20
+                ) {
+                  setUsername(newUsername.trim());
+                  localStorage.setItem("chatUsername", newUsername.trim());
+                  setIsEditingUsername(false);
+                }
+              }}
+              className="flex items-center gap-2"
+            >
+              <Input
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="New username..."
+                className="w-32"
+                required
+                minLength={3}
+                maxLength={20}
+                autoFocus
+              />
+              <Button type="submit" size="sm" variant="outline">
+                Save
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsEditingUsername(false)}
+              >
+                Cancel
+              </Button>
+            </form>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full font-medium">
+                {username}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setNewUsername(username);
+                  setIsEditingUsername(true);
+                }}
+              >
+                <PencilIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       <div className="space-y-4">
