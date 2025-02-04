@@ -15,7 +15,7 @@ type NoiseEvent = {
 export default function Monitor() {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [noiseLevel, setNoiseLevel] = useState(0);
-  const [threshold, setThreshold] = useState(50);
+  const [threshold, setThreshold] = useState(15);
   const [minDuration, setMinDuration] = useState(3);
   const [noiseEvents, setNoiseEvents] = useState<NoiseEvent[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -70,7 +70,6 @@ export default function Monitor() {
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       dataArrayRef.current = dataArray;
-      console.log(dataArray);
       setIsMonitoring(true);
       setError(null);
       requestAnimationFrame(updateNoiseLevel);
@@ -106,7 +105,6 @@ export default function Monitor() {
     analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
     let sum = 0;
     for (let i = 0; i < dataArrayRef.current.length; i++) {
-      // Convert to float between -1 and 1
       const amplitude = (dataArrayRef.current[i] - 128) / 128;
       sum += amplitude * amplitude;
     }
@@ -140,17 +138,18 @@ export default function Monitor() {
       thresholdStartTimeRef.current = null;
     }
 
-    // Continue the animation frame loop only if still monitoring
+    // Schedule the next update after 1 second
     if (isMonitoring) {
-      requestAnimationFrame(updateNoiseLevel);
+      setTimeout(updateNoiseLevel, 1000);
     }
   };
 
   useEffect(() => {
-    // Start the animation frame loop when monitoring begins
+    // Start the update loop when monitoring begins
     if (isMonitoring) {
-      requestAnimationFrame(updateNoiseLevel);
+      updateNoiseLevel();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMonitoring]);
 
   if (!mounted) return null;
