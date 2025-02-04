@@ -18,7 +18,7 @@ import {
 import { Line } from "react-chartjs-2";
 import { Button } from "@/components/ui/button";
 import {
-  BombIcon,
+  CircleParking,
   Droplet,
   PencilIcon,
   TrashIcon,
@@ -437,7 +437,7 @@ export default function Feed() {
                           {feed.pooped && (
                             <span className={"text-amber-800 flex gap-1"}>
                               <p>Pooped</p>
-                              <BombIcon className="h-5 w-5" />
+                              <CircleParking className="h-5 w-5" />
                             </span>
                           )}
                         </div>
