@@ -1,21 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "@liveblocks/react-ui/styles.css";
-
-.thread,
-.composer {
-  position: relative;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 4%), 0 2px 6px rgb(0 0 0 / 4%),
-    0 8px 26px rgb(0 0 0 / 6%);
-}
-
-body {
-  font-family: "Helvetica Neue", Arial, sans-serif;
-  background-color: hsl(351, 100%, 97%);
-}
 
 @layer base {
   :root {

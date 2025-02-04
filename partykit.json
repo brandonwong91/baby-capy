@@ -1,0 +1,7 @@
+{
+  "name": "baby-capy-chat",
+  "main": "party/chat-room.ts",
+  "parties": {
+    "chat": "party/chat-room.ts"
+  }
+}
