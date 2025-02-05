@@ -130,43 +130,6 @@ export default function Feed() {
     }
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingFeed || feedEntries.length === 0) return;
-
-    try {
-      const entry = feedEntries[0];
-      const localFeedTime = getLocalFeedTime(selectedDate, entry.feedTime);
-
-      const response = await fetch(`/api/feeds?id=${editingFeed.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          feedTime: localFeedTime.toISOString(),
-          amount: parseInt(entry.amount),
-          wetDiaper: entry.wetDiaper,
-          pooped: entry.pooped,
-        }),
-      });
-
-      if (response.ok) {
-        setEditingFeed(null);
-        setFeedEntries([
-          {
-            feedTime: "",
-            amount: "",
-            wetDiaper: false,
-            pooped: false,
-            id: Date.now(),
-          },
-        ]);
-        fetchFeeds(selectedDate);
-      }
-    } catch (error) {
-      console.error("Failed to update feed:", error);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this feed?")) return;
 
@@ -183,17 +146,27 @@ export default function Feed() {
     }
   };
 
-  const handleEdit = (feed: Feed) => {
-    setEditingFeed(feed);
-    setFeedEntries([
-      {
-        feedTime: format(new Date(feed.feedTime), "HH:mm"),
-        amount: feed.amount.toString(),
-        wetDiaper: feed.wetDiaper,
-        pooped: feed.pooped,
-        id: Date.now(),
-      },
-    ]);
+  const handleSaveEdit = async (feed: Feed) => {
+    try {
+      const response = await fetch(`/api/feeds?id=${feed.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          feedTime: feed.feedTime,
+          amount: feed.amount,
+          wetDiaper: feed.wetDiaper,
+          pooped: feed.pooped,
+        }),
+      });
+      if (response.ok) {
+        setEditingFeed(null);
+        fetchFeeds(selectedDate);
+      }
+    } catch (error) {
+      console.error("Failed to update feed:", error);
+    }
   };
 
   if (!mounted) return null;
@@ -214,10 +187,7 @@ export default function Feed() {
 
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Add New Feed</h2>
-            <form
-              onSubmit={editingFeed ? handleUpdate : handleSubmit}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSubmit} className="space-y-4">
               {feedEntries.map((entry, index) => (
                 <div key={entry.id} className="space-y-4 relative">
                   {index > 0 && (
@@ -335,7 +305,6 @@ export default function Feed() {
                           },
                         ]);
                       }}
-                      //   className="w-full bg-gray-100 text-gray-600 rounded-md py-2 hover:bg-gray-200 transition-colors mt-4"
                       className="w-full"
                     >
                       Add Another Entry
@@ -344,20 +313,8 @@ export default function Feed() {
                 </div>
               ))}
               <Button variant={"default"} type="submit" className="w-full">
-                {editingFeed ? "Update Feed" : "Add Feed"}
+                Add Feed
               </Button>
-              {editingFeed && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setEditingFeed(null);
-                  }}
-                  className="w-full"
-                  variant={"destructive"}
-                >
-                  Cancel Edit
-                </Button>
-              )}
             </form>
           </div>
         </div>
@@ -422,40 +379,150 @@ export default function Feed() {
                     className="border rounded-lg p-4 space-y-2"
                   >
                     <div className="flex justify-between items-center">
-                      <div className="space-y-2">
-                        <p className="font-medium">
-                          Time: {format(new Date(feed.feedTime), "HH:mm")}
-                        </p>
-                        <p>Amount: {feed.amount}ml</p>
-                        <div className="flex space-x-4 text-sm">
-                          {feed.wetDiaper && (
-                            <span className={"text-blue-500 flex gap-1"}>
-                              <p>Wet Diaper</p>
-                              <Droplet className="h-5 w-5" />
-                            </span>
-                          )}
-                          {feed.pooped && (
-                            <span className={"text-amber-800 flex gap-1"}>
-                              <p>Pooped</p>
-                              <CircleParking className="h-5 w-5" />
-                            </span>
-                          )}
+                      {editingFeed?.id === feed.id ? (
+                        <div className="space-y-4 w-full">
+                          <div className="flex justify-between w-full gap-2">
+                            <div className="flex-1">
+                              <label className="block text-sm font-medium mb-1">
+                                Time
+                              </label>
+                              <Input
+                                type="time"
+                                value={format(new Date(feed.feedTime), "HH:mm")}
+                                onChange={(e) => {
+                                  const updatedFeeds = feeds.map((f) =>
+                                    f.id === feed.id
+                                      ? {
+                                          ...f,
+                                          feedTime: `${format(
+                                            selectedDate,
+                                            "yyyy-MM-dd"
+                                          )}T${e.target.value}`,
+                                        }
+                                      : f
+                                  );
+                                  setFeeds(updatedFeeds);
+                                }}
+                                required
+                                step="600"
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-sm font-medium mb-1">
+                                Amount (ml)
+                              </label>
+                              <Input
+                                type="number"
+                                value={feed.amount}
+                                onChange={(e) => {
+                                  const updatedFeeds = feeds.map((f) =>
+                                    f.id === feed.id
+                                      ? {
+                                          ...f,
+                                          amount: parseInt(e.target.value) || 0,
+                                        }
+                                      : f
+                                  );
+                                  setFeeds(updatedFeeds);
+                                }}
+                                required
+                                min="0"
+                                step="10"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex space-x-4">
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={feed.wetDiaper}
+                                onChange={(e) => {
+                                  const updatedFeeds = feeds.map((f) =>
+                                    f.id === feed.id
+                                      ? { ...f, wetDiaper: e.target.checked }
+                                      : f
+                                  );
+                                  setFeeds(updatedFeeds);
+                                }}
+                                className="rounded"
+                              />
+                              <span>Wet Diaper</span>
+                            </label>
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={feed.pooped}
+                                onChange={(e) => {
+                                  const updatedFeeds = feeds.map((f) =>
+                                    f.id === feed.id
+                                      ? { ...f, pooped: e.target.checked }
+                                      : f
+                                  );
+                                  setFeeds(updatedFeeds);
+                                }}
+                                className="rounded"
+                              />
+                              <span>Pooped</span>
+                            </label>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={() => handleSaveEdit(feed)}
+                              variant={"secondary"}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setEditingFeed(null);
+                                fetchFeeds(selectedDate);
+                              }}
+                              variant={"destructive"}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => handleEdit(feed)}
-                          variant={"outline"}
-                        >
-                          <PencilIcon />
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(feed.id)}
-                          variant={"destructive"}
-                        >
-                          <TrashIcon />
-                        </Button>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="space-y-2">
+                            <p className="font-medium">
+                              Time: {format(new Date(feed.feedTime), "HH:mm")}
+                            </p>
+                            <p>Amount: {feed.amount}ml</p>
+                            <div className="flex space-x-4 text-sm">
+                              {feed.wetDiaper && (
+                                <span className={"text-blue-500 flex gap-1"}>
+                                  <p>Wet Diaper</p>
+                                  <Droplet className="h-5 w-5" />
+                                </span>
+                              )}
+                              {feed.pooped && (
+                                <span className={"text-amber-800 flex gap-1"}>
+                                  <p>Pooped</p>
+                                  <CircleParking className="h-5 w-5" />
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={() => setEditingFeed(feed)}
+                              variant={"outline"}
+                            >
+                              <PencilIcon />
+                            </Button>
+                            <Button
+                              onClick={() => handleDelete(feed.id)}
+                              variant={"destructive"}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))
