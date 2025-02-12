@@ -48,6 +48,10 @@ export default function Feed() {
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [highestVolumeLastWeek, setHighestVolumeLastWeek] = useState({
+    amount: 0,
+    date: "",
+  });
   const [feedEntries, setFeedEntries] = useState([
     {
       feedTime: "",
@@ -67,7 +71,18 @@ export default function Feed() {
     }
     setMounted(true);
     fetchFeeds(selectedDate);
+    fetchStats();
   }, [router, selectedDate]);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch("/api/feeds/stats");
+      const data = await response.json();
+      setHighestVolumeLastWeek(data.highestVolumeLastWeek);
+    } catch (error) {
+      console.error("Failed to fetch stats:", error);
+    }
+  };
 
   const fetchFeeds = async (date: Date) => {
     try {
@@ -159,13 +174,17 @@ export default function Feed() {
   const handleSaveEdit = async (feed: Feed) => {
     setIsSaving(true);
     try {
+      const localFeedTime = getLocalFeedTime(
+        selectedDate,
+        format(new Date(feed.feedTime), "HH:mm")
+      );
       const response = await fetch(`/api/feeds?id=${feed.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          feedTime: feed.feedTime,
+          feedTime: localFeedTime.toISOString(),
           amount: feed.amount,
           wetDiaper: feed.wetDiaper,
           pooped: feed.pooped,
@@ -347,6 +366,23 @@ export default function Feed() {
         <div className="gap-6 flex flex-col-reverse md:flex-col">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Daily Feeding Chart</h2>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Highest Volume (Last 7 Days)
+              </p>
+              <p className="text-lg font-semibold text-pink-600">
+                {highestVolumeLastWeek ? (
+                  <>
+                    {highestVolumeLastWeek.amount} ml
+                    <span className="text-sm text-gray-500 ml-2">
+                      {highestVolumeLastWeek.date}
+                    </span>
+                  </>
+                ) : (
+                  "No data available"
+                )}
+              </p>
+            </div>
             <Line
               data={{
                 labels: feeds.map((feed) =>
