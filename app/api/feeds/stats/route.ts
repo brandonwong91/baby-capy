@@ -65,6 +65,13 @@ export async function GET() {
           )
         : { date: format(new Date(), "yyyy-MM-dd"), total: 0 };
 
+    const lowestVolumeLastWeek =
+      recentDailyTotals.length > 0
+        ? recentDailyTotals.reduce((min, current) =>
+            current.total < min.total ? current : min
+          )
+        : { date: format(new Date(), "yyyy-MM-dd"), total: 0 };
+
     const response = {
       highestVolume: {
         amount: highestVolume.total,
@@ -77,6 +84,10 @@ export async function GET() {
       highestVolumeLastWeek: {
         amount: highestVolumeLastWeek.total,
         date: format(new Date(highestVolumeLastWeek.date), "MMM d, yyyy"),
+      },
+      lowestVolumeLastWeek: {
+        amount: lowestVolumeLastWeek.total,
+        date: format(new Date(lowestVolumeLastWeek.date), "MMM d, yyyy"),
       },
     };
 

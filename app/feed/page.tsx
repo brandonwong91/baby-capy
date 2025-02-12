@@ -52,6 +52,10 @@ export default function Feed() {
     amount: 0,
     date: "",
   });
+  const [lowestVolumeLastWeek, setLowestVolumeLastWeek] = useState({
+    amount: 0,
+    date: "",
+  });
   const [feedEntries, setFeedEntries] = useState([
     {
       feedTime: "",
@@ -79,6 +83,7 @@ export default function Feed() {
       const response = await fetch("/api/feeds/stats");
       const data = await response.json();
       setHighestVolumeLastWeek(data.highestVolumeLastWeek);
+      setLowestVolumeLastWeek(data.lowestVolumeLastWeek);
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     }
@@ -366,22 +371,41 @@ export default function Feed() {
         <div className="gap-6 flex flex-col-reverse md:flex-col">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Daily Feeding Chart</h2>
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                Highest Volume (Last 7 Days)
-              </p>
-              <p className="text-lg font-semibold text-pink-600">
-                {highestVolumeLastWeek ? (
-                  <>
-                    {highestVolumeLastWeek.amount} ml
-                    <span className="text-sm text-gray-500 ml-2">
-                      {highestVolumeLastWeek.date}
-                    </span>
-                  </>
-                ) : (
-                  "No data available"
-                )}
-              </p>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg space-y-4">
+              <div>
+                <p className="text-sm text-gray-600">
+                  Highest Volume (Last 7 Days)
+                </p>
+                <p className="text-lg font-semibold text-pink-600">
+                  {highestVolumeLastWeek ? (
+                    <>
+                      {highestVolumeLastWeek.amount} ml
+                      <span className="text-sm text-gray-500 ml-2">
+                        {highestVolumeLastWeek.date}
+                      </span>
+                    </>
+                  ) : (
+                    "No data available"
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">
+                  Lowest Volume (Last 7 Days)
+                </p>
+                <p className="text-lg font-semibold text-blue-600">
+                  {lowestVolumeLastWeek ? (
+                    <>
+                      {lowestVolumeLastWeek.amount} ml
+                      <span className="text-sm text-gray-500 ml-2">
+                        {lowestVolumeLastWeek.date}
+                      </span>
+                    </>
+                  ) : (
+                    "No data available"
+                  )}
+                </p>
+              </div>
             </div>
             <Line
               data={{
