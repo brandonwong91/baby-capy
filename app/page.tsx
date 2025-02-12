@@ -33,12 +33,14 @@ export default function Home() {
     }
   };
 
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const checkAndNavigate = (inputDate: Date) => {
     if (
       inputDate.getDate() === 9 &&
       inputDate.getMonth() === 4 &&
       inputDate.getFullYear() === 2024
     ) {
+      setIsAuthenticating(true);
       localStorage.setItem("isDateAuthenticated", "true");
       router.push("/dashboard");
     }
@@ -61,7 +63,10 @@ export default function Home() {
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
-            className="rounded-md border"
+            className={`rounded-md border transition-opacity duration-200 ${
+              isAuthenticating ? "opacity-50" : ""
+            }`}
+            disabled={isAuthenticating}
           />
         </div>
       </div>

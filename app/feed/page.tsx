@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   CircleParking,
   Droplet,
+  Loader2,
   PencilIcon,
   TrashIcon,
   XCircleIcon,
@@ -92,8 +93,13 @@ export default function Feed() {
     );
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const promises = feedEntries.map((entry) => {
         const localFeedTime = getLocalFeedTime(selectedDate, entry.feedTime);
@@ -127,12 +133,14 @@ export default function Feed() {
       }
     } catch (error) {
       console.error("Failed to create feed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this feed?")) return;
-
+    setIsDeleting(id);
     try {
       const response = await fetch(`/api/feeds?id=${id}`, {
         method: "DELETE",
@@ -143,10 +151,13 @@ export default function Feed() {
       }
     } catch (error) {
       console.error("Failed to delete feed:", error);
+    } finally {
+      setIsDeleting(null);
     }
   };
 
   const handleSaveEdit = async (feed: Feed) => {
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/feeds?id=${feed.id}`, {
         method: "PUT",
@@ -166,6 +177,8 @@ export default function Feed() {
       }
     } catch (error) {
       console.error("Failed to update feed:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -312,8 +325,20 @@ export default function Feed() {
                   )}
                 </div>
               ))}
-              <Button variant={"default"} type="submit" className="w-full">
-                Add Feed
+              <Button
+                variant={"default"}
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add Feed"
+                )}
               </Button>
             </form>
           </div>
@@ -471,8 +496,16 @@ export default function Feed() {
                             <Button
                               onClick={() => handleSaveEdit(feed)}
                               variant={"secondary"}
+                              disabled={isSaving}
                             >
-                              Save
+                              {isSaving ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                "Save"
+                              )}
                             </Button>
                             <Button
                               onClick={() => {
@@ -517,8 +550,13 @@ export default function Feed() {
                             <Button
                               onClick={() => handleDelete(feed.id)}
                               variant={"destructive"}
+                              disabled={isDeleting === feed.id}
                             >
-                              <TrashIcon />
+                              {isDeleting === feed.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <TrashIcon />
+                              )}
                             </Button>
                           </div>
                         </>

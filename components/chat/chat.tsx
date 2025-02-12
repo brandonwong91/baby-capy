@@ -110,10 +110,11 @@ export function Chat() {
     setIsAuthenticated(true);
   };
 
+  const [isSubmittingMessage, setIsSubmittingMessage] = useState(false);
   const handleMessageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-
+    setIsSubmittingMessage(true);
     socket.send(
       JSON.stringify({
         type: "message",
@@ -122,6 +123,7 @@ export function Chat() {
       })
     );
     setNewMessage("");
+    setIsSubmittingMessage(false);
   };
 
   if (!isAuthenticated) {
@@ -251,7 +253,15 @@ export function Chat() {
             className="flex-1"
             required
           />
-          <Button type="submit">Send</Button>
+          <Button
+            type="submit"
+            disabled={isSubmittingMessage}
+            className={`transition-all duration-200 ${
+              isSubmittingMessage ? "opacity-70" : ""
+            }`}
+          >
+            {isSubmittingMessage ? "Sending..." : "Send"}
+          </Button>
         </form>
       </div>
     </div>
