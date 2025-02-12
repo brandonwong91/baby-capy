@@ -12,12 +12,22 @@ import { useRouter } from "next/navigation";
 import ReactConfetti from "react-confetti";
 import { Button } from "@/components/ui/button";
 
+type FeedStats = {
+  highestVolume: { amount: number; date: string };
+  lowestVolume: { amount: number; date: string };
+  highestVolumeLastWeek: { amount: number; date: string };
+};
+
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: typeof window !== "undefined" ? window.innerWidth : 0,
     height: typeof window !== "undefined" ? window.innerHeight : 0,
   });
+  const [stats, setStats] = useState<FeedStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const router = useRouter();
   const targetDate = new Date("2024-05-09");
   const currentDate = new Date();
@@ -39,6 +49,29 @@ export default function Dashboard() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [router]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/feeds/stats");
+        if (!response.ok) {
+          throw new Error("Failed to fetch feed statistics");
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred while fetching statistics"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const calculateDaysUntilBirthday = () => {
     const today = new Date();
@@ -124,13 +157,60 @@ export default function Dashboard() {
             />
           </div>
         </div>
+        <div className="mb-8 p-6 bg-blue-50 rounded-lg">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-blue-800">
+            Feeding Statistics
+          </h2>
+          {error ? (
+            <div className="text-red-500 text-center p-4">{error}</div>
+          ) : loading ? (
+            <div className="text-center p-4">Loading statistics...</div>
+          ) : stats ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500">
+                  Highest Volume Ever
+                </h3>
+                <div className="mt-2">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats.highestVolume.amount}ml
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {stats.highestVolume.date}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500">
+                  Lowest Volume Ever
+                </h3>
+                <div className="mt-2">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats.lowestVolume.amount}ml
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {stats.lowestVolume.date}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500">
+                  Highest Volume (Last 7 Days)
+                </h3>
+                <div className="mt-2">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats.highestVolumeLastWeek.amount}ml
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {stats.highestVolumeLastWeek.date}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
         <div className="flex justify-center">
-          <Button
-            onClick={() => router.push("/feed")}
-            // className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Go to Feed
-          </Button>
+          <Button onClick={() => router.push("/feed")}>Go to Feed</Button>
         </div>
       </div>
     </main>
