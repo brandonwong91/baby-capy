@@ -48,6 +48,11 @@ export default function Feed() {
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [nextFeedPrediction, setNextFeedPrediction] = useState<{
+    hours: number;
+    minutes: number;
+    message: string;
+  } | null>(null);
   const [highestVolumeLastWeek, setHighestVolumeLastWeek] = useState({
     amount: 0,
     date: "",
@@ -76,7 +81,27 @@ export default function Feed() {
     setMounted(true);
     fetchFeeds(selectedDate);
     fetchStats();
+    fetchNextFeedPrediction();
   }, [router, selectedDate]);
+
+  const fetchNextFeedPrediction = async () => {
+    try {
+      const response = await fetch("/api/feeds/next-feed");
+      const data = await response.json();
+      if (data.nextFeedIn) {
+        setNextFeedPrediction({
+          hours: data.nextFeedIn.hours,
+          minutes: data.nextFeedIn.minutes,
+          message: data.message,
+        });
+      } else {
+        setNextFeedPrediction(null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch next feed prediction:", error);
+      setNextFeedPrediction(null);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -451,8 +476,49 @@ export default function Feed() {
 
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4">
-              Daily Feeds ({feeds.reduce((sum, feed) => sum + feed.amount, 0)}
+              Daily Feeds ({feeds.reduce((sum, feed) => sum + feed.amount, 0)}{" "}
               ml)
+              {nextFeedPrediction && (
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600">
+                    {nextFeedPrediction.message}
+                  </div>
+                  {nextFeedPrediction.predictionHistory && (
+                    <div className="mt-4">
+                      <h3 className="text-lg font-semibold mb-2">
+                        Prediction History
+                      </h3>
+                      <div className="space-y-2">
+                        {nextFeedPrediction.predictionHistory.map(
+                          (prediction, index) => (
+                            <div key={index} className="text-sm">
+                              <span className="text-gray-600">
+                                {prediction.date}:{" "}
+                              </span>
+                              <span className="font-medium">
+                                Predicted {prediction.predictedTime}
+                              </span>
+                              <span className="text-gray-600">
+                                {" "}
+                                | Actual {prediction.actualTime}
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                      {nextFeedPrediction.averageTimeBetweenFeeds && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          Average time between feeds:{" "}
+                          {Math.floor(
+                            nextFeedPrediction.averageTimeBetweenFeeds / 60
+                          )}
+                          h {nextFeedPrediction.averageTimeBetweenFeeds % 60}m
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </h2>
             <div className="space-y-4">
               {feeds.length === 0 ? (
