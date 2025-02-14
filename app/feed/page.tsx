@@ -52,6 +52,11 @@ export default function Feed() {
     hours: number;
     minutes: number;
     message: string;
+    predictionHistory?: {
+      date: string;
+      predictedTime: string;
+      actualTime?: string;
+    }[];
   } | null>(null);
   const [highestVolumeLastWeek, setHighestVolumeLastWeek] = useState({
     amount: 0,
@@ -483,7 +488,7 @@ export default function Feed() {
                   <div className="text-sm text-gray-600">
                     {nextFeedPrediction.message}
                   </div>
-                  {nextFeedPrediction.predictionHistory && (
+                  {nextFeedPrediction?.predictionHistory && (
                     <div className="mt-4">
                       <h3 className="text-lg font-semibold mb-2">
                         Prediction History
@@ -506,15 +511,6 @@ export default function Feed() {
                           )
                         )}
                       </div>
-                      {nextFeedPrediction.averageTimeBetweenFeeds && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          Average time between feeds:{" "}
-                          {Math.floor(
-                            nextFeedPrediction.averageTimeBetweenFeeds / 60
-                          )}
-                          h {nextFeedPrediction.averageTimeBetweenFeeds % 60}m
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

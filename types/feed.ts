@@ -13,11 +13,8 @@ export interface FeedPrediction {
   } | null;
   message: string;
   predictionHistory?: {
-    feedNumber: number;
-    averageTime: string;
-    previousFeeds: {
-      date: string;
-      time: string;
-    }[];
-  };
+    date: string;
+    predictedTime: string;
+    actualTime: string;
+  }[];
 }
