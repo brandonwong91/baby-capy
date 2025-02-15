@@ -3,6 +3,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface FeedRequest {
+  feedTime: string;
+  amount: number;
+  wetDiaper: boolean;
+  pooped: boolean;
+  solidFoods?: string[];
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
@@ -44,13 +52,28 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as FeedRequest;
+
+    // Validate required fields
+    if (
+      !body.feedTime ||
+      typeof body.amount !== "number" ||
+      typeof body.wetDiaper !== "boolean" ||
+      typeof body.pooped !== "boolean"
+    ) {
+      return NextResponse.json(
+        { error: "Missing or invalid required fields" },
+        { status: 400 }
+      );
+    }
+
     const feed = await prisma.feed.create({
       data: {
         feedTime: new Date(body.feedTime),
         amount: body.amount,
         wetDiaper: body.wetDiaper,
         pooped: body.pooped,
+        solidFoods: body.solidFoods || [],
       },
     });
 
@@ -73,7 +96,21 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as FeedRequest;
+
+    // Validate required fields
+    if (
+      !body.feedTime ||
+      typeof body.amount !== "number" ||
+      typeof body.wetDiaper !== "boolean" ||
+      typeof body.pooped !== "boolean"
+    ) {
+      return NextResponse.json(
+        { error: "Missing or invalid required fields" },
+        { status: 400 }
+      );
+    }
+
     const feed = await prisma.feed.update({
       where: { id },
       data: {
@@ -81,6 +118,7 @@ export async function PUT(request: Request) {
         amount: body.amount,
         wetDiaper: body.wetDiaper,
         pooped: body.pooped,
+        solidFoods: body.solidFoods || [],
       },
     });
 

@@ -4,6 +4,7 @@ export interface Feed {
   amount: number;
   wetDiaper: boolean;
   pooped: boolean;
+  solidFoods?: string[];
 }
 
 export interface FeedPrediction {

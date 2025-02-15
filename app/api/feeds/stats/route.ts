@@ -13,12 +13,15 @@ export async function GET() {
   try {
     // Get all feeds grouped by date
     const allFeeds = await prisma.feed.findMany();
-
     if (!allFeeds.length) {
       return NextResponse.json({
         highestVolume: { amount: 0, date: format(new Date(), "MMM d, yyyy") },
         lowestVolume: { amount: 0, date: format(new Date(), "MMM d, yyyy") },
         highestVolumeLastWeek: {
+          amount: 0,
+          date: format(new Date(), "MMM d, yyyy"),
+        },
+        lowestVolumeLastWeek: {
           amount: 0,
           date: format(new Date(), "MMM d, yyyy"),
         },
@@ -90,13 +93,17 @@ export async function GET() {
         date: format(new Date(lowestVolumeLastWeek.date), "MMM d, yyyy"),
       },
     };
-
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching feed stats:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch feed statistics" },
-      { status: 500 }
-    );
+    const defaultDate = format(new Date(), "MMM d, yyyy");
+    const errorResponse = {
+      error: "Failed to fetch feed statistics",
+      highestVolume: { amount: 0, date: defaultDate },
+      lowestVolume: { amount: 0, date: defaultDate },
+      highestVolumeLastWeek: { amount: 0, date: defaultDate },
+      lowestVolumeLastWeek: { amount: 0, date: defaultDate },
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
