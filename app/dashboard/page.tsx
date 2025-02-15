@@ -25,6 +25,13 @@ export default function Dashboard() {
     height: typeof window !== "undefined" ? window.innerHeight : 0,
   });
   const [stats, setStats] = useState<FeedStats | null>(null);
+  const [lastPoop, setLastPoop] = useState<{
+    days: number;
+    hours: number;
+    message: string;
+    feedTime?: string;
+    showDetails?: boolean;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,26 +58,37 @@ export default function Dashboard() {
   }, [router]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch("/api/feeds/stats");
-        if (!response.ok) {
+        const [statsResponse, poopResponse] = await Promise.all([
+          fetch("/api/feeds/stats"),
+          fetch("/api/feeds/last-poop"),
+        ]);
+
+        if (!statsResponse.ok) {
           throw new Error("Failed to fetch feed statistics");
         }
-        const data = await response.json();
-        setStats(data);
+        if (!poopResponse.ok) {
+          throw new Error("Failed to fetch last poop time");
+        }
+
+        const statsData = await statsResponse.json();
+        const poopData = await poopResponse.json();
+
+        setStats(statsData);
+        setLastPoop(poopData);
       } catch (err) {
         setError(
           err instanceof Error
             ? err.message
-            : "An error occurred while fetching statistics"
+            : "An error occurred while fetching data"
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   const calculateDaysUntilBirthday = () => {
@@ -208,6 +226,31 @@ export default function Dashboard() {
               </div>
             </div>
           ) : null}
+        </div>
+        <div className="mb-8 p-6 bg-pink-50 rounded-lg text-center">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-pink-800">
+            Time Since Last Poop
+          </h2>
+          {lastPoop && (
+            <button
+              onClick={() =>
+                setLastPoop((prev) => ({
+                  ...prev!,
+                  showDetails: !prev?.showDetails,
+                }))
+              }
+              className="w-full text-center focus:outline-none"
+            >
+              <div className="text-4xl sm:text-6xl font-bold text-pink-600">
+                {lastPoop.days} days {lastPoop.hours} hours
+              </div>
+              {lastPoop.showDetails && lastPoop.feedTime && (
+                <div className="mt-4 text-lg text-pink-500">
+                  Last pooped on: {new Date(lastPoop.feedTime).toLocaleString()}
+                </div>
+              )}
+            </button>
+          )}
         </div>
         <div className="flex justify-center">
           <Button onClick={() => router.push("/feed")}>Go to Feed</Button>
