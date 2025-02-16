@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         amount: body.amount,
         wetDiaper: body.wetDiaper,
         pooped: body.pooped,
-        solidFoods: body.solidFoods || [],
+        solidFoods: (body.solidFoods || []).map((food) => food.toLowerCase()),
       },
     });
 
@@ -118,7 +118,7 @@ export async function PUT(request: Request) {
         amount: body.amount,
         wetDiaper: body.wetDiaper,
         pooped: body.pooped,
-        solidFoods: body.solidFoods || [],
+        solidFoods: (body.solidFoods || []).map((food) => food.toLowerCase()),
       },
     });
 

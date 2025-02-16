@@ -296,7 +296,7 @@ export default function Dashboard() {
             <div className="space-y-4">
               {solidFoods.map(({ food, timestamp }) => (
                 <div
-                  key={`{food}-${timestamp}`}
+                  key={`${food}-${timestamp}`}
                   className="bg-white p-4 rounded-lg shadow"
                 >
                   <div className="flex justify-between items-center">

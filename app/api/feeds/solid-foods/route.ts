@@ -21,15 +21,28 @@ export async function GET() {
       },
     });
 
-    // Transform the data to match the expected structure
-    const solidFoodsWithTimestamps = feeds.flatMap((feed) =>
-      feed.solidFoods.map((food) => ({
-        food: food,
-        timestamp: feed.feedTime.toISOString(),
-      }))
-    );
-    // Sort by timestamp in descending order
-    solidFoodsWithTimestamps.sort(
+    // Transform and group the data by food name, keeping the latest timestamp
+    const foodMap = new Map();
+
+    feeds.forEach((feed) => {
+      feed.solidFoods.forEach((food) => {
+        const existingEntry = foodMap.get(food);
+        const currentTimestamp = feed.feedTime.toISOString();
+
+        if (
+          !existingEntry ||
+          new Date(currentTimestamp) > new Date(existingEntry.timestamp)
+        ) {
+          foodMap.set(food, {
+            food: food,
+            timestamp: currentTimestamp,
+          });
+        }
+      });
+    });
+
+    // Convert Map to array and sort by timestamp in descending order
+    const solidFoodsWithTimestamps = Array.from(foodMap.values()).sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
