@@ -25,6 +25,9 @@ export default function Dashboard() {
     height: typeof window !== "undefined" ? window.innerHeight : 0,
   });
   const [stats, setStats] = useState<FeedStats | null>(null);
+  const [solidFoods, setSolidFoods] = useState<
+    Array<{ food: string; timestamp: string }>
+  >([]);
   const [lastPoop, setLastPoop] = useState<{
     days: number;
     hours: number;
@@ -60,10 +63,12 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsResponse, poopResponse] = await Promise.all([
-          fetch("/api/feeds/stats"),
-          fetch("/api/feeds/last-poop"),
-        ]);
+        const [statsResponse, poopResponse, solidFoodsResponse] =
+          await Promise.all([
+            fetch("/api/feeds/stats"),
+            fetch("/api/feeds/last-poop"),
+            fetch("/api/feeds/solid-foods"),
+          ]);
 
         if (!statsResponse.ok) {
           throw new Error("Failed to fetch feed statistics");
@@ -71,12 +76,17 @@ export default function Dashboard() {
         if (!poopResponse.ok) {
           throw new Error("Failed to fetch last poop time");
         }
+        if (!solidFoodsResponse.ok) {
+          throw new Error("Failed to fetch solid foods");
+        }
 
         const statsData = await statsResponse.json();
         const poopData = await poopResponse.json();
-
+        const solidFoodsData = await solidFoodsResponse.json();
+        console.log("solid fe", solidFoodsData);
         setStats(statsData);
         setLastPoop(poopData);
+        setSolidFoods(solidFoodsData.solidFoods);
       } catch (err) {
         setError(
           err instanceof Error
@@ -90,7 +100,7 @@ export default function Dashboard() {
 
     fetchData();
   }, []);
-
+  console.log("solid outside useEffect", solidFoods);
   const calculateDaysUntilBirthday = () => {
     const today = new Date();
     const birthday = new Date(today.getFullYear(), 4, 9); // May is month 4 (0-based)
@@ -250,6 +260,60 @@ export default function Dashboard() {
                 </div>
               )}
             </button>
+          )}
+        </div>
+        <div className="mb-8 p-6 bg-pink-50 rounded-lg">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-pink-800">
+            Recent Solid Foods
+          </h2>
+          {/* {solidFoods.length > 0 && (
+            <div className="space-y-4">
+              {solidFoods.map(({food, timestamp}) =>
+                 (
+                  <div
+                    key={`{food}-${timestamp}`}
+                    className="bg-white p-4 rounded-lg shadow"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-medium text-pink-600">
+                        {food}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )
+              )}
+              
+            </div>
+          )} */}
+          {error ? (
+            <div className="text-red-500 text-center p-4">{error}</div>
+          ) : loading ? (
+            <div className="text-center p-4">Loading solid foods...</div>
+          ) : solidFoods.length > 0 ? (
+            <div className="space-y-4">
+              {solidFoods.map(({ food, timestamp }) => (
+                <div
+                  key={`{food}-${timestamp}`}
+                  className="bg-white p-4 rounded-lg shadow"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-medium text-pink-600">
+                      {food}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500">
+              No solid foods recorded
+            </div>
           )}
         </div>
         <div className="flex justify-center">
