@@ -263,6 +263,7 @@ export default function Feed() {
             id: Date.now(),
           },
         ]);
+        setCurrentSolidFood("");
         fetchFeeds(selectedDate);
         fetchNextFeedPrediction();
         fetchStats();
