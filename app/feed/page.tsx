@@ -17,6 +17,7 @@ import { FeedEntry } from "./components/FeedEntry";
 import { FeedPrediction } from "@/types/feed";
 import { FeedChart } from "./components/FeedChart";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 
 type Feed = {
   id: string;
@@ -102,23 +103,6 @@ export default function Feed() {
 
   const onSolidFoodChange = (value: string) => {
     setCurrentSolidFood(value);
-    if (value.endsWith(",")) {
-      const newFood = value.slice(0, -1).trim();
-      if (newFood) {
-        const lastIndex = feedEntries.length - 1;
-        setFeedEntries((entries) =>
-          entries.map((item, i) =>
-            i === lastIndex
-              ? {
-                  ...item,
-                  solidFoods: [...(item.solidFoods || []), newFood],
-                }
-              : item
-          )
-        );
-      }
-      setCurrentSolidFood("");
-    }
   };
 
   const onSolidFoodDelete = (entryIndex: number, foodIndex: number) => {
@@ -330,6 +314,32 @@ export default function Feed() {
     }
   };
 
+  const [solidFoodSuggestions, setSolidFoodSuggestions] = useState<string[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchSolidFoods = async () => {
+      try {
+        const response = await fetch("/api/feeds/solid-foods");
+        if (!response.ok) throw new Error("Failed to fetch solid foods");
+        const data: { solidFoods: Array<{ food: string }> } =
+          await response.json();
+        const uniqueFoods = Array.from(
+          new Set(
+            data.solidFoods
+              .filter((item) => item.food && item.food.trim())
+              .map((item) => item.food.trim().toLowerCase())
+          )
+        ).sort() as string[];
+        setSolidFoodSuggestions(uniqueFoods);
+      } catch (error) {
+        console.error("Error fetching solid foods:", error);
+      }
+    };
+    fetchSolidFoods();
+  }, []);
+
   if (!mounted) return null;
 
   return (
@@ -482,24 +492,22 @@ export default function Feed() {
                             <label className="block text-sm font-medium mb-1">
                               Solid Foods
                             </label>
-                            <Input
-                              type="text"
-                              value={
-                                editSolidFood.index === index
-                                  ? editSolidFood.value
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value;
+                            <Combobox
+                              value={editSolidFood.value}
+                              onChange={(value) => {
                                 setEditSolidFood({
                                   value,
                                   index,
                                 });
-                                if (value.endsWith(",")) {
-                                  const newFood = value
-                                    .slice(0, -1)
-                                    .trim()
-                                    .toLowerCase();
+                                if (
+                                  value.endsWith(",") ||
+                                  solidFoodSuggestions.includes(
+                                    value.toLowerCase()
+                                  )
+                                ) {
+                                  const newFood = value.endsWith(",")
+                                    ? value.slice(0, -1).trim().toLowerCase()
+                                    : value.toLowerCase();
                                   if (newFood && editingFeed) {
                                     const updatedFeed = {
                                       ...editingFeed,
@@ -522,12 +530,18 @@ export default function Feed() {
                                   }
                                   setEditSolidFood({
                                     value: "",
-                                    index: 0,
+                                    index,
                                   });
                                 }
                               }}
-                              placeholder="Type and press comma to add"
-                              className="w-full mb-2"
+                              options={solidFoodSuggestions}
+                              placeholder="Select or type a food item"
+                              emptyMessage="No foods found"
+                              isSelected={(option) =>
+                                editingFeed?.solidFoods?.includes(
+                                  option.toLowerCase()
+                                )
+                              }
                             />
                             <div className="flex flex-wrap gap-2">
                               {editingFeed?.solidFoods?.map(

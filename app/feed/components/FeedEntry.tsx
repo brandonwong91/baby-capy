@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { XCircleIcon } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
+import { useEffect, useState } from "react";
 
 type FeedEntryProps = {
   entry: {
@@ -41,6 +43,32 @@ export function FeedEntry({
   isLastEntry,
   onAddEntry,
 }: FeedEntryProps) {
+  const [solidFoodSuggestions, setSolidFoodSuggestions] = useState<string[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchSolidFoods = async () => {
+      try {
+        const response = await fetch("/api/feeds/solid-foods");
+        if (!response.ok) throw new Error("Failed to fetch solid foods");
+        const data: { solidFoods: Array<{ food: string }> } =
+          await response.json();
+        const uniqueFoods = Array.from(
+          new Set(
+            data.solidFoods
+              .filter((item) => item.food && item.food.trim())
+              .map((item) => item.food.trim().toLowerCase())
+          )
+        ).sort() as string[];
+        setSolidFoodSuggestions(uniqueFoods);
+      } catch (error) {
+        console.error("Error fetching solid foods:", error);
+      }
+    };
+    fetchSolidFoods();
+  }, []);
+
   return (
     <div className="space-y-4 relative">
       {index > 0 && (
@@ -83,12 +111,31 @@ export function FeedEntry({
       </div>
       <div className="flex-1">
         <label className="block text-sm font-medium mb-1">Solid Foods</label>
-        <Input
-          type="text"
+        <Combobox
           value={currentSolidFood}
-          onChange={(e) => onSolidFoodChange(e.target.value)}
-          placeholder="Type and press comma to add"
-          className="w-full mb-2"
+          onChange={(value) => {
+            onSolidFoodChange(value);
+            // Handle both comma-separated input and dropdown selection
+            if (value.endsWith(",") || solidFoodSuggestions.includes(value)) {
+              const newFood = value.endsWith(",")
+                ? value.slice(0, -1).trim().toLowerCase()
+                : value.toLowerCase();
+              if (newFood) {
+                onUpdate(index, {
+                  solidFoods: [...(entry.solidFoods || []), newFood].filter(
+                    (food, index, array) => array.indexOf(food) === index
+                  ),
+                });
+                onSolidFoodChange("");
+              }
+            }
+          }}
+          options={solidFoodSuggestions}
+          placeholder="Select or type a food item"
+          emptyMessage="No foods found"
+          isSelected={(option) =>
+            entry.solidFoods?.includes(option.toLowerCase())
+          }
         />
         <div className="flex flex-wrap gap-2">
           {entry.solidFoods?.map((food, foodIndex) => (
