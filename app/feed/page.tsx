@@ -637,18 +637,18 @@ export default function Feed() {
                               Time: {format(new Date(feed.feedTime), "HH:mm")}
                             </p>
                             <p>Amount: {feed.amount}ml</p>
-                            <div className="flex space-x-4 text-sm">
+                            <div className="flex md:space-x-4 text-sm md:flex-row flex-col">
                               {feed.wetDiaper && (
-                                <span className={"text-blue-500 flex gap-1"}>
+                                <div className={"text-blue-500 flex gap-1"}>
                                   <p>Wet Diaper</p>
                                   <Droplet className="h-5 w-5" />
-                                </span>
+                                </div>
                               )}
                               {feed.pooped && (
-                                <span className={"text-amber-800 flex gap-1"}>
+                                <div className={"text-amber-800 flex gap-1"}>
                                   <p>Pooped</p>
                                   <CircleParking className="h-5 w-5" />
-                                </span>
+                                </div>
                               )}
                             </div>
                             {feed.solidFoods && feed.solidFoods.length > 0 && (
