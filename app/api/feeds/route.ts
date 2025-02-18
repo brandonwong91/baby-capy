@@ -110,7 +110,7 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
-
+    console.log(body);
     const feed = await prisma.feed.update({
       where: { id },
       data: {

@@ -76,9 +76,11 @@ export default function Feed() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [currentSolidFood, setCurrentSolidFood] = useState("");
-  const [editSolidFood, setEditSolidFood] = useState("");
+  const [editSolidFood, setEditSolidFood] = useState({
+    value: "",
+    index: 0,
+  });
   const [showPredictionHistory, setShowPredictionHistory] = useState(false);
-
   const onDelete = (index: number) => {
     setFeedEntries((entries) => entries.filter((_, i) => i !== index));
   };
@@ -318,6 +320,7 @@ export default function Feed() {
       });
       if (response.ok) {
         setEditingFeed(null);
+        setEditSolidFood({ value: "", index: 0 });
         fetchFeeds(selectedDate);
       }
     } catch (error) {
@@ -418,7 +421,7 @@ export default function Feed() {
               {feeds.length === 0 ? (
                 <p className="text-gray-500">No feeds recorded for this day</p>
               ) : (
-                feeds.map((feed) => (
+                feeds.map((feed, index) => (
                   <div
                     key={feed.id}
                     className="border rounded-lg p-4 space-y-2"
@@ -481,29 +484,46 @@ export default function Feed() {
                             </label>
                             <Input
                               type="text"
-                              value={editSolidFood}
+                              value={
+                                editSolidFood.index === index
+                                  ? editSolidFood.value
+                                  : ""
+                              }
                               onChange={(e) => {
                                 const value = e.target.value;
-                                setEditSolidFood(value);
-
+                                setEditSolidFood({
+                                  value,
+                                  index,
+                                });
                                 if (value.endsWith(",")) {
-                                  const newFood = value.slice(0, -1).trim();
+                                  const newFood = value
+                                    .slice(0, -1)
+                                    .trim()
+                                    .toLowerCase();
                                   if (newFood && editingFeed) {
+                                    const updatedFeed = {
+                                      ...editingFeed,
+                                      solidFoods: [
+                                        ...(editingFeed.solidFoods || []),
+                                        newFood,
+                                      ].filter(
+                                        (food, index, array) =>
+                                          array.indexOf(food) === index
+                                      ),
+                                    };
+                                    setEditingFeed(updatedFeed);
                                     setFeeds((prevFeeds) =>
                                       prevFeeds.map((feed) =>
                                         feed.id === editingFeed.id
-                                          ? {
-                                              ...feed,
-                                              solidFoods: [
-                                                ...(feed.solidFoods || []),
-                                                newFood,
-                                              ],
-                                            }
+                                          ? updatedFeed
                                           : feed
                                       )
                                     );
                                   }
-                                  setCurrentSolidFood("");
+                                  setEditSolidFood({
+                                    value: "",
+                                    index: 0,
+                                  });
                                 }
                               }}
                               placeholder="Type and press comma to add"
@@ -572,7 +592,7 @@ export default function Feed() {
                           </div>
                           <div className="flex space-x-2">
                             <Button
-                              onClick={() => handleSaveEdit(feed)}
+                              onClick={() => handleSaveEdit(editingFeed)}
                               variant={"secondary"}
                               disabled={isSaving}
                             >
