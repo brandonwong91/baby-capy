@@ -457,6 +457,11 @@ export default function Feed() {
                                     ).toISOString(),
                                   };
                                   setEditingFeed(updatedFeed);
+                                  setFeeds((prevFeeds) =>
+                                    prevFeeds.map((f) =>
+                                      f.id === feed.id ? updatedFeed : f
+                                    )
+                                  );
                                 }}
                                 required
                                 step="600"
@@ -471,15 +476,16 @@ export default function Feed() {
                                 type="number"
                                 value={feed.amount}
                                 onChange={(e) => {
-                                  const updatedFeeds = feeds.map((f) =>
-                                    f.id === feed.id
-                                      ? {
-                                          ...f,
-                                          amount: parseInt(e.target.value) || 0,
-                                        }
-                                      : f
+                                  const updatedFeed = {
+                                    ...feed,
+                                    amount: parseInt(e.target.value) || 0,
+                                  };
+                                  setEditingFeed(updatedFeed);
+                                  setFeeds((prevFeeds) =>
+                                    prevFeeds.map((f) =>
+                                      f.id === feed.id ? updatedFeed : f
+                                    )
                                   );
-                                  setFeeds(updatedFeeds);
                                 }}
                                 required
                                 min="0"
