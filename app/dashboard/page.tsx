@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import ReactConfetti from "react-confetti";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type FeedStats = {
   highestVolume: { amount: number; date: string };
@@ -28,6 +29,38 @@ export default function Dashboard() {
   const [solidFoods, setSolidFoods] = useState<
     Array<{ food: string; timestamp: string }>
   >([]);
+  const [editingFood, setEditingFood] = useState<{
+    food: string;
+    timestamp: string;
+  } | null>(null);
+  const [originalFood, setOriginalFood] = useState<string>("");
+
+  const handleSaveFood = async () => {
+    if (!editingFood) return;
+    try {
+      const response = await fetch(`/api/feeds/solid-foods`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          oldFood: originalFood,
+          newFood: editingFood.food.trim().toLowerCase(),
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the solid foods list after successful update
+        const refreshResponse = await fetch("/api/feeds/solid-foods");
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          setSolidFoods(data.solidFoods);
+        }
+        setEditingFood(null);
+        setOriginalFood("");
+      }
+    } catch (error) {
+      console.error("Failed to update solid food:", error);
+    }
+  };
   const [lastPoop, setLastPoop] = useState<{
     days: number;
     hours: number;
@@ -266,28 +299,6 @@ export default function Dashboard() {
           <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-pink-800">
             Recent Solid Foods
           </h2>
-          {/* {solidFoods.length > 0 && (
-            <div className="space-y-4">
-              {solidFoods.map(({food, timestamp}) =>
-                 (
-                  <div
-                    key={`{food}-${timestamp}`}
-                    className="bg-white p-4 rounded-lg shadow"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-medium text-pink-600">
-                        {food}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {new Date(timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                )
-              )}
-              
-            </div>
-          )} */}
           {error ? (
             <div className="text-red-500 text-center p-4">{error}</div>
           ) : loading ? (
@@ -300,12 +311,70 @@ export default function Dashboard() {
                   className="bg-white p-4 rounded-lg shadow"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium text-pink-600">
-                      {food}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(timestamp).toLocaleString()}
-                    </span>
+                    {editingFood?.food === food ? (
+                      <div className="flex-1">
+                        <Input
+                          type="text"
+                          value={editingFood.food}
+                          onChange={(e) =>
+                            setEditingFood({
+                              ...editingFood,
+                              food: e.target.value,
+                            })
+                          }
+                          className="text-lg font-medium text-pink-600 pr-4"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSaveFood();
+                            } else if (e.key === "Escape") {
+                              setEditingFood(null);
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-lg font-medium text-pink-600">
+                        {food}
+                      </span>
+                    )}
+                    <div className="flex items-center gap-2 pl-4">
+                      <span className="text-sm text-gray-500">
+                        {new Date(timestamp).toLocaleString()}
+                      </span>
+                      {editingFood?.food === food ? (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleSaveFood}
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingFood(null)}
+                            className="text-gray-600 hover:text-gray-700"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setOriginalFood(food);
+                            setEditingFood({ food, timestamp });
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

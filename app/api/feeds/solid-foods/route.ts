@@ -57,3 +57,54 @@ export async function GET() {
     );
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const { oldFood, newFood } = await request.json();
+    console.log("old", oldFood, "new", newFood);
+    if (!oldFood || !newFood) {
+      return NextResponse.json(
+        { error: "Both old and new food names are required" },
+        { status: 400 }
+      );
+    }
+
+    // Get all feeds that contain the old food name
+    const feeds = await prisma.feed.findMany({
+      where: {
+        solidFoods: {
+          has: oldFood.toLowerCase(),
+        },
+      },
+    });
+
+    // Update each feed's solidFoods array
+    const updatePromises = feeds.map((feed) => {
+      const updatedSolidFoods = feed.solidFoods.map((food) =>
+        food.toLowerCase() === oldFood.toLowerCase()
+          ? newFood.toLowerCase()
+          : food
+      );
+
+      return prisma.feed.update({
+        where: { id: feed.id },
+        data: {
+          solidFoods: updatedSolidFoods,
+        },
+      });
+    });
+
+    await Promise.all(updatePromises);
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully updated '${oldFood}' to '${newFood}'`,
+    });
+  } catch (error) {
+    console.error("Error updating solid food:", error);
+    return NextResponse.json(
+      { error: "Failed to update solid food" },
+      { status: 500 }
+    );
+  }
+}
