@@ -582,12 +582,16 @@ export default function Feed() {
                                 type="checkbox"
                                 checked={feed.wetDiaper}
                                 onChange={(e) => {
-                                  const updatedFeeds = feeds.map((f) =>
-                                    f.id === feed.id
-                                      ? { ...f, wetDiaper: e.target.checked }
-                                      : f
+                                  const updatedFeed = {
+                                    ...feed,
+                                    wetDiaper: e.target.checked,
+                                  };
+                                  setEditingFeed(updatedFeed);
+                                  setFeeds((prevFeeds) =>
+                                    prevFeeds.map((f) =>
+                                      f.id === feed.id ? updatedFeed : f
+                                    )
                                   );
-                                  setFeeds(updatedFeeds);
                                 }}
                                 className="rounded"
                               />
@@ -598,12 +602,16 @@ export default function Feed() {
                                 type="checkbox"
                                 checked={feed.pooped}
                                 onChange={(e) => {
-                                  const updatedFeeds = feeds.map((f) =>
-                                    f.id === feed.id
-                                      ? { ...f, pooped: e.target.checked }
-                                      : f
+                                  const updatedFeed = {
+                                    ...feed,
+                                    pooped: e.target.checked,
+                                  };
+                                  setEditingFeed(updatedFeed);
+                                  setFeeds((prevFeeds) =>
+                                    prevFeeds.map((f) =>
+                                      f.id === feed.id ? updatedFeed : f
+                                    )
                                   );
-                                  setFeeds(updatedFeeds);
                                 }}
                                 className="rounded"
                               />
