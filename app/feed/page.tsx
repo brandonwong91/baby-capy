@@ -76,7 +76,6 @@ export default function Feed() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentSolidFood, setCurrentSolidFood] = useState("");
   const [editSolidFood, setEditSolidFood] = useState({
     value: "",
     index: 0,
@@ -98,23 +97,6 @@ export default function Feed() {
   ) => {
     setFeedEntries((entries) =>
       entries.map((item, i) => (i === index ? { ...item, ...update } : item))
-    );
-  };
-
-  const onSolidFoodChange = (value: string) => {
-    setCurrentSolidFood(value);
-  };
-
-  const onSolidFoodDelete = (entryIndex: number, foodIndex: number) => {
-    setFeedEntries((entries) =>
-      entries.map((item, i) =>
-        i === entryIndex
-          ? {
-              ...item,
-              solidFoods: item.solidFoods?.filter((_, i) => i !== foodIndex),
-            }
-          : item
-      )
     );
   };
 
@@ -249,7 +231,6 @@ export default function Feed() {
             id: Date.now(),
           },
         ]);
-        setCurrentSolidFood("");
         fetchFeeds(selectedDate);
         fetchNextFeedPrediction();
         fetchStats();
@@ -366,9 +347,6 @@ export default function Feed() {
                   index={index}
                   onDelete={onDelete}
                   onUpdate={onUpdate}
-                  currentSolidFood={currentSolidFood}
-                  onSolidFoodChange={onSolidFoodChange}
-                  onSolidFoodDelete={onSolidFoodDelete}
                   isLastEntry={index === feedEntries.length - 1}
                   onAddEntry={onAddEntry}
                 />
@@ -501,10 +479,11 @@ export default function Feed() {
                             <Combobox
                               value={editSolidFood.value}
                               onChange={(value) => {
-                                setEditSolidFood({
-                                  value,
-                                  index,
-                                });
+                                if (index === editSolidFood.index)
+                                  setEditSolidFood({
+                                    value,
+                                    index,
+                                  });
                                 if (
                                   value.endsWith(",") ||
                                   solidFoodSuggestions.includes(

@@ -25,6 +25,7 @@ interface ComboboxProps {
   emptyMessage?: string;
   onKeyDown?: (e: React.KeyboardEvent) => void;
   isSelected?: (option: string) => boolean | undefined;
+  onBlur?: () => void;
 }
 
 export function Combobox({
@@ -35,6 +36,7 @@ export function Combobox({
   emptyMessage = "No results found.",
   onKeyDown,
   isSelected,
+  onBlur,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
@@ -62,39 +64,49 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white border border-pink-200 rounded-md shadow-lg mt-1">
         <Command className="border-none">
-          <CommandInput
-            placeholder={placeholder}
-            value={inputValue || ""}
-            onValueChange={(newValue) => {
-              setInputValue(newValue);
-              onChange(newValue);
-            }}
-            className="w-full px-3 py-2 border border-pink-200 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
-            onKeyDown={onKeyDown}
-          />
-          <CommandEmpty className="p-2 text-sm text-gray-500">
-            {emptyMessage}
-          </CommandEmpty>
-          <CommandGroup>
-            {filteredOptions.map((option) => (
-              <CommandItem
-                key={option}
-                onSelect={() => {
-                  onChange(option);
-                  setOpen(false);
-                }}
-                className="px-4 py-2 hover:bg-pink-50 cursor-pointer flex items-center"
-              >
-                <Check
-                  className={cn(
-                    "mr-3 h-4 w-4 text-pink-600",
-                    isSelected?.(option) ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {option}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <div className="sticky top-0 bg-white z-10 border-b border-pink-200">
+            <CommandInput
+              placeholder={placeholder}
+              value={inputValue || ""}
+              onValueChange={(newValue) => {
+                setInputValue(newValue);
+                onChange(newValue);
+              }}
+              onBlur={() => {
+                if (!open && value) {
+                  onBlur?.();
+                  setInputValue(value);
+                }
+              }}
+              className="w-full px-3 py-2 border border-pink-200 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+              onKeyDown={onKeyDown}
+            />
+          </div>
+          <div className="max-h-[300px] overflow-y-auto">
+            <CommandEmpty className="p-2 text-sm text-gray-500">
+              {emptyMessage}
+            </CommandEmpty>
+            <CommandGroup>
+              {filteredOptions.map((option) => (
+                <CommandItem
+                  key={option}
+                  onSelect={() => {
+                    onChange(option);
+                    setOpen(false);
+                  }}
+                  className="px-4 py-2 hover:bg-pink-50 cursor-pointer flex items-center"
+                >
+                  <Check
+                    className={cn(
+                      "mr-3 h-4 w-4 text-pink-600",
+                      isSelected?.(option) ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>

@@ -25,9 +25,6 @@ type FeedEntryProps = {
       solidFoods: string[];
     }>
   ) => void;
-  currentSolidFood: string;
-  onSolidFoodChange: (value: string) => void;
-  onSolidFoodDelete: (entryIndex: number, foodIndex: number) => void;
   isLastEntry: boolean;
   onAddEntry: () => void;
 };
@@ -37,15 +34,13 @@ export function FeedEntry({
   index,
   onDelete,
   onUpdate,
-  currentSolidFood,
-  onSolidFoodChange,
-  onSolidFoodDelete,
   isLastEntry,
   onAddEntry,
 }: FeedEntryProps) {
   const [solidFoodSuggestions, setSolidFoodSuggestions] = useState<string[]>(
     []
   );
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     const fetchSolidFoods = async () => {
@@ -112,10 +107,9 @@ export function FeedEntry({
       <div className="flex-1">
         <label className="block text-sm font-medium mb-1">Solid Foods</label>
         <Combobox
-          value={currentSolidFood}
+          value={inputValue}
           onChange={(value) => {
-            onSolidFoodChange(value);
-            // Handle both comma-separated input and dropdown selection
+            setInputValue(value);
             if (value.endsWith(",") || solidFoodSuggestions.includes(value)) {
               const newFood = value.endsWith(",")
                 ? value.slice(0, -1).trim().toLowerCase()
@@ -123,11 +117,22 @@ export function FeedEntry({
               if (newFood) {
                 onUpdate(index, {
                   solidFoods: [...(entry.solidFoods || []), newFood].filter(
-                    (food, index, array) => array.indexOf(food) === index
+                    (food, idx, array) => array.indexOf(food) === idx
                   ),
                 });
-                onSolidFoodChange("");
+                setInputValue("");
               }
+            }
+          }}
+          onBlur={() => {
+            if (inputValue.trim()) {
+              const newFood = inputValue.trim().toLowerCase();
+              onUpdate(index, {
+                solidFoods: [...(entry.solidFoods || []), newFood].filter(
+                  (food, idx, array) => array.indexOf(food) === idx
+                ),
+              });
+              setInputValue("");
             }
           }}
           options={solidFoodSuggestions}
@@ -146,7 +151,12 @@ export function FeedEntry({
               <span>{food}</span>
               <button
                 type="button"
-                onClick={() => onSolidFoodDelete(index, foodIndex)}
+                onClick={() => {
+                  const updatedFoods = entry.solidFoods.filter(
+                    (_, idx) => idx !== foodIndex
+                  );
+                  onUpdate(index, { solidFoods: updatedFoods });
+                }}
                 className="ml-2 text-pink-600 hover:text-pink-800"
               >
                 <XCircleIcon className="h-4 w-4" />
