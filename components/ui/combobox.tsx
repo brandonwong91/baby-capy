@@ -62,7 +62,7 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white border border-pink-200 rounded-md shadow-lg mt-1">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white border border-pink-200 rounded-md shadow-lg mt-1 z-50 relative">
         <Command className="border-none">
           <div className="sticky top-0 bg-white z-10 border-b border-pink-200">
             <CommandInput
