@@ -304,7 +304,7 @@ export default function Dashboard() {
           ) : loading ? (
             <div className="text-center p-4">Loading solid foods...</div>
           ) : solidFoods.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-4 h-[400px] overflow-auto">
               {solidFoods.map(({ food, timestamp }) => (
                 <div
                   key={`${food}-${timestamp}`}
