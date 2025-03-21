@@ -7,6 +7,11 @@ export interface Feed {
   solidFoods?: string[];
 }
 
+export interface PendingFeed extends Feed {
+  id: string;
+  status: "pending" | "syncing" | "error";
+}
+
 export interface FeedPrediction {
   nextFeedIn: {
     hours: number;
