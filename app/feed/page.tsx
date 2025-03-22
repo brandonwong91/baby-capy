@@ -412,16 +412,19 @@ export default function Feed() {
   if (!mounted) return null;
 
   return (
-    <main className="bg-gray-100 min-h-screen">
+    <main className="flex min-h-screen flex-col items-center justify-start p-8">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
-            />
+          <div className="gap-6 flex flex-col-reverse md:flex-col">
+            <div className="bg-white rounded-lg shadow-lg p-6 place-text-center space-y-4 flex-col justify-center">
+              <h2 className="text-2xl font-bold self-start">Select Date</h2>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                className="rounded-md border w-fit mx-auto"
+              />
+            </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold mb-4">Add New Feed</h2>
