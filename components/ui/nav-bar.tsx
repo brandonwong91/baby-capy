@@ -3,13 +3,15 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { PWAInstall } from "@/components/ui/pwa-install";
+import { DownloadIcon } from "lucide-react";
 
 export function NavBar() {
   const pathname = usePathname();
 
   return (
     <nav className="w-full bg-card shadow-md mb-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto justify-center px-4 w-fit">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-12">
             <Link href="/" className="flex items-center">
@@ -45,6 +47,9 @@ export function NavBar() {
             >
               Monitor
             </Link>
+            <PWAInstall>
+              <DownloadIcon className="h-4 w-4 text-primary-700 cursor-pointer" />
+            </PWAInstall>
           </div>
         </div>
       </div>
