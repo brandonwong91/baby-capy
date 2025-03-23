@@ -412,10 +412,10 @@ export default function Feed() {
   if (!mounted) return null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-8">
-      <div className="container mx-auto px-4 py-8">
+    <main className="flex min-h-screen flex-col items-center justify-start md:p-8 py-2">
+      <div className="container px-4 md:py-8 py-4 max-w-screen-lg">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="gap-6 flex flex-col-reverse md:flex-col">
+          <div className="gap-6 flex flex-col">
             <div className="bg-white rounded-lg shadow-lg p-6 place-text-center space-y-4 flex-col justify-center">
               <h2 className="text-2xl font-bold self-start">Select Date</h2>
               <Calendar
