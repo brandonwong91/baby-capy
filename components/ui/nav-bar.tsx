@@ -13,7 +13,7 @@ export function NavBar() {
     <nav className="w-full bg-card shadow-md mb-8">
       <div className="max-w-4xl mx-auto justify-center px-4 w-fit">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center space-x-12">
+          <div className="flex items-center space-x-4 md:space-x-12 ">
             <Link href="/" className="flex items-center">
               <Image src="/favicon.ico" alt="Home" width={24} height={24} />
             </Link>
