@@ -247,7 +247,7 @@ export default function Feed() {
       `${format(selectedDate, "yyyy-MM-dd")}T${timeString}`
     );
     return new Date(
-      feedTimeDate.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+      feedTimeDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
     );
   };
 
